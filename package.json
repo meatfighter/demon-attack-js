@@ -10,18 +10,21 @@
   "license": "GPL-3.0-only",
   "type": "module",
   "scripts": {
-    "clean:index": "rimraf public_html/scripts/*.bundle.js public_html/scripts/*.bundle.js.LICENSE.txt",
-    "clean:sw": "rimraf public_html/app/*.bundle.js public_html/app/*.bundle.js.LICENSE.txt",
-    "clean:app": "rimraf public_html/app/resources.zip public_html/app/scripts/*.bundle.js public_html/app/scripts/*.bundle.js.LICENSE.txt",
+    "clean:index": "rimraf --glob public_html/scripts/*.bundle.js public_html/scripts/*.bundle.js.LICENSE.txt",
+    "clean:sw": "rimraf --glob public_html/app/*.bundle.js public_html/app/*.bundle.js.LICENSE.txt",
+    "clean:app": "rimraf --glob public_html/app/resources.zip public_html/app/scripts/*.bundle.js public_html/app/scripts/*.bundle.js.LICENSE.txt",
     "clean": "npm run clean:index && npm run clean:sw && npm run clean:app",
     "pack:index": "npx webpack --mode production --config webpack.config.index.mjs",
     "pack:sw": "npx webpack --mode production --config webpack.config.sw.mjs",
     "pack:app": "npx webpack --mode production --config webpack.config.app.mjs",
     "pack": "npm run pack:index && npm run pack:sw && npm run pack:app",
-    "zip": "zip -r public_html/app/resources.zip sfx/",
-    "build": "npm run clean && npm run zip && npm run pack"
+    "zip": "bestzip public_html/app/resources.zip sfx/*",
+    "build": "npm run clean && npm run zip && npm run pack",
+    "start": "http-server public_html -p 8080"
   },
   "devDependencies": {
+    "bestzip": "^2.2.1",
+    "http-server": "^14.1.1",
     "rimraf": "^5.0.10",
     "ts-loader": "^9.5.1",
     "typescript": "^5.6.3",
