@@ -1,0 +1,200 @@
+@media only screen and (max-device-width: 400px) {
+    html {
+        -webkit-text-size-adjust: none;
+        text-size-adjust: none;
+    }
+}
+
+body {
+    background-color: #1E1F22;
+    color: #FFFFFF;
+    margin: 0;
+    padding: 0;
+    user-select: none;
+}
+
+body, button, input, select, textarea {
+    font-family: 'Open Sans', sans-serif;
+}
+
+#demon-canvas {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+
+    display: block;
+    position: absolute;
+}
+
+#start-container {
+    display: block;
+    position: absolute;
+}
+
+#start-div {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+#volume-input {
+    -webkit-appearance: none;
+    appearance: none;
+    flex-grow: 1;
+    width: 300px;
+    height: 8px;
+    background: transparent;
+    border-radius: 10px;
+    margin: 0 auto;
+    position: relative;
+    --thumb-position: 10%;
+}
+
+#volume-input:focus {
+    outline: none;
+}
+
+/* Chrome, Safari, and newer Edge versions */
+#volume-input::-webkit-slider-runnable-track {
+    -webkit-appearance: none;
+    background: linear-gradient(to right, #0080FF 0%, #0080FF var(--thumb-position, 50%), gray var(--thumb-position, 50%), gray 100%);
+    border-radius: 10px;
+    height: 8px;
+}
+
+#volume-input::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    border: 3px solid white;
+    height: 24px;
+    width: 24px;
+    border-radius: 50%;
+    background: #0069CC;
+    margin-top: -8px;
+    position: relative;
+    z-index: 2;
+}
+
+/* Firefox */
+#volume-input::-moz-range-track {
+    background: gray;
+    border-radius: 10px;
+    height: 8px;
+}
+
+#volume-input::-moz-range-progress {
+    background: #0080FF;
+    border-radius: 10px;
+    height: 8px;
+}
+
+#volume-input::-moz-range-thumb {
+    -moz-appearance: none;
+    border: 3px solid white;
+    height: 18px;
+    width: 18px;
+    border-radius: 50%;
+    background: #0069CC;
+}
+
+.volume-div {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.left-volume-label {
+    display: inline-block;
+    margin-right: 10px;
+    font-size: 24px;
+}
+
+.right-volume-label {
+    display: inline-block;
+    margin-left: 10px;
+}
+
+#go-div {
+    margin-top: 40px;
+}
+
+button {
+    background-color: #48D800;
+    color: black;
+    border: none;
+    padding: 10px 20px;
+    margin: 0 5px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    font-weight: bold;
+    border-radius: 16px;
+}
+
+button:active {
+    transform: translateY(2px);
+}
+
+button:disabled {
+    background-color: #604B37;
+}
+
+button:disabled:active {
+    transform: none;
+}
+
+button:focus {
+    outline: none;
+}
+
+#progress-container {
+    display: block;
+    position: absolute;
+}
+
+#progress-div {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+#loading-progress {
+    width: 300px;
+    border: none;
+    height: 8px;
+    border-radius: 4px;
+    color: #0075FF;
+    background: #CCCCCC;
+    -webkit-appearance: none;
+}
+
+#loading-progress::-webkit-progress-bar {
+    background-color: #CCCCCC;
+    border-radius: 4px;
+}
+
+#loading-progress::-webkit-progress-value {
+    background-color: #0075FF;
+    border-radius: 4px;
+}
+
+#loading-progress::-moz-progress-bar {
+    background: #0075FF;
+    border-radius: 4px;
+}
+
+#death-div {
+    position: absolute;
+    display: flex;
+    justify-content: center;
+    flex-direction: column;
+    align-items: center;
+}
+
+#fatal-error {
+    font-size: 4em;
+}
