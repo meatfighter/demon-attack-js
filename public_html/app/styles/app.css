@@ -26,6 +26,15 @@ body, button, input, select, textarea {
     position: absolute;
 }
 
+#screen-canvas {
+    image-rendering: pixelated;
+    image-rendering: -moz-crisp-edges;
+    image-rendering: crisp-edges;
+
+    display: block;
+    position: absolute;
+}
+
 #start-container {
     display: block;
     position: absolute;

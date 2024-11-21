@@ -107,10 +107,19 @@ export function render() {
         return;
     }
     
-    ctx.fillStyle = 'black';
+    ctx.fillStyle = 'blue';
     ctx.fillRect(0, 0, Resolution.WIDTH, Resolution.HEIGHT);
+    ctx.strokeStyle = 'red';
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(0, 0);
+    ctx.lineTo(50, 50);
+    ctx.stroke();
 
-    demonCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
+    console.log(`--12: ${demonCanvas!.width} ${demonCanvas!.height}`);
+    demonCtx.fillStyle = 'yellow';
+    demonCtx.fillRect(0, 0, demonCanvas!.width, demonCanvas!.height);
+    //demonCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
 }
 
 function onTap() {
@@ -134,40 +143,39 @@ function windowResized() {
     if (!demonCanvas) {
         return;
     }
-    demonCanvas.width = demonCanvas.height = 1;
+    demonCanvas.style.display = 'none';
+
+    const innerWidth = window.innerWidth;
+    const innerHeight = window.innerHeight;
+
+    demonCanvas.style.display = 'block';
+    demonCanvas.style.width = `${innerWidth}px`;
+    demonCanvas.style.height = `${innerHeight}px`;    
+    demonCanvas.style.position = 'absolute';
+    demonCanvas.style.left = '0px';
+    demonCanvas.style.top = '0px';
 
     const dpr = window.devicePixelRatio || 1;
-    let styleWidth = window.innerWidth;
-    let styleHeight = window.innerHeight;
-
     const transform = new DOMMatrix();
     if (innerWidth >= innerHeight) {
         transform.a = transform.d = dpr;
         transform.b = transform.c = transform.e = transform.f = 0;
+        demonCanvas.width = Math.floor(dpr * innerWidth);
+        demonCanvas.height = Math.floor(dpr * innerHeight);
     } else {
         transform.a = transform.d = transform.e = 0;
         transform.b = -dpr;
         transform.c = dpr;
-        transform.f = dpr * styleWidth;
-        let t = styleWidth;
-        styleWidth = styleHeight;
-        styleHeight = t;
+        transform.f = dpr * innerWidth;
+        demonCanvas.width = Math.floor(dpr * innerHeight);
+        demonCanvas.height = Math.floor(dpr * innerWidth);
     }
-
-    demonCanvas.style.width = `${Math.floor(styleWidth)}px`;
-    demonCanvas.style.height = `${Math.floor(styleHeight)}px`;
-
-    demonCanvas.width = Math.floor(dpr * styleWidth);
-    demonCanvas.height = Math.floor(dpr * styleHeight);
 
     demonCtx = demonCanvas.getContext('2d');
     if (!demonCtx) {
         return;
     }
     demonCtx.setTransform(transform);
-
-    demonCanvas.style.left = `0px`
-    demonCanvas.style.top = `0px`;
 
     screenHeight = demonCanvas.height;
     screenWidth = screenHeight * PhysicalDimensions.WIDTH / PhysicalDimensions.HEIGHT;
