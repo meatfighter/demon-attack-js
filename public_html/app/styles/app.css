@@ -17,20 +17,7 @@ body, button, input, select, textarea {
     font-family: 'Open Sans', sans-serif;
 }
 
-#demon-canvas {
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-
-    display: block;
-    position: absolute;
-}
-
-#screen-canvas {
-    image-rendering: pixelated;
-    image-rendering: -moz-crisp-edges;
-    image-rendering: crisp-edges;
-
+#main-canvas {
     display: block;
     position: absolute;
 }

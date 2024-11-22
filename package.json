@@ -20,7 +20,8 @@
     "pack": "npm run pack:index && npm run pack:sw && npm run pack:app",
     "zip": "bestzip public_html/app/resources.zip sfx/*",
     "build": "npm run clean && npm run zip && npm run pack",
-    "start": "http-server public_html -p 8080"
+    "start": "http-server public_html -p 8080",
+    "refresh": "npm run build && npm run start"
   },
   "devDependencies": {
     "bestzip": "^2.2.1",

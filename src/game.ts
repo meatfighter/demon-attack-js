@@ -9,8 +9,10 @@ enum State {
     GAME_START
 }
 
-let demonCanvas: HTMLCanvasElement | null;
-let demonCtx: CanvasRenderingContext2D | null;
+let mainCanvas: HTMLCanvasElement | null;
+let mainCtx: CanvasRenderingContext2D | null;
+let mainCanvasWidth: number;
+let mainCanvasHeight: number;
 
 let screenCanvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D | null;
@@ -55,16 +57,16 @@ export function enter() {
 
     screenCanvas = document.createElement('canvas');
     screenCanvas.width = Resolution.WIDTH;
-    screenCanvas.height = Resolution.HEIGHT;
+    screenCanvas.height = Resolution.HEIGHT;  
     ctx = screenCanvas.getContext('2d');
 
-    acquireWakeLock();
-
     const mainElement = document.getElementById("main-content") as HTMLElement;
-    mainElement.innerHTML = `<canvas id="demon-canvas" class="canvas" width="1" height="1"></canvas>`;
-    demonCanvas = document.getElementById("demon-canvas") as HTMLCanvasElement;
+    mainElement.innerHTML = `<canvas id="main-canvas" class="canvas" width="1" height="1"></canvas>`;
+    mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement;
 
+    acquireWakeLock();
     updatePixelRatio();
+    startAnimation();
 }
 
 export function exit() {
@@ -99,7 +101,7 @@ function updateGameStart() {
 }
 
 export function render() {
-    if (!demonCtx) {
+    if (!mainCtx) {
         windowResized();
         return;
     }
@@ -116,14 +118,19 @@ export function render() {
     ctx.lineTo(50, 50);
     ctx.stroke();
 
-    console.log(`--12: ${demonCanvas!.width} ${demonCanvas!.height}`);
-    demonCtx.fillStyle = 'yellow';
-    demonCtx.fillRect(0, 0, demonCanvas!.width, demonCanvas!.height);
-    //demonCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
-}
+    console.log(`--11`);
+    mainCtx.fillStyle = 'yellow';
+    mainCtx.fillRect(0, 0, mainCanvasWidth, mainCanvasHeight);
+    mainCtx.strokeStyle = 'red';
+    mainCtx.lineWidth = 1;
+    mainCtx.beginPath();
+    mainCtx.moveTo(0, 0);
+    mainCtx.lineTo(50, 50);
+    mainCtx.stroke();
 
-function onTap() {
-
+    mainCtx.imageSmoothingEnabled = false;
+    mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
+    mainCtx.imageSmoothingEnabled = true;
 }
 
 function onKeyDown(e: KeyboardEvent) {
@@ -138,54 +145,62 @@ function windowResized() {
         return;
     }
 
-    demonCtx = null;
-    demonCanvas = document.getElementById("demon-canvas") as HTMLCanvasElement | null;
-    if (!demonCanvas) {
+    mainCtx = null;
+    mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement | null;
+    if (!mainCanvas) {
         return;
     }
-    demonCanvas.style.display = 'none';
+    mainCanvas.style.display = 'none';
 
     const innerWidth = window.innerWidth;
     const innerHeight = window.innerHeight;
 
-    demonCanvas.style.display = 'block';
-    demonCanvas.style.width = `${innerWidth}px`;
-    demonCanvas.style.height = `${innerHeight}px`;    
-    demonCanvas.style.position = 'absolute';
-    demonCanvas.style.left = '0px';
-    demonCanvas.style.top = '0px';
+    mainCanvas.style.display = 'block';
+    mainCanvas.style.width = `${innerWidth}px`;
+    mainCanvas.style.height = `${innerHeight}px`;    
+    mainCanvas.style.position = 'absolute';
+    mainCanvas.style.left = '0px';
+    mainCanvas.style.top = '0px';
 
     const dpr = window.devicePixelRatio || 1;
+    mainCanvas.width = Math.floor(dpr * innerWidth);
+    mainCanvas.height = Math.floor(dpr * innerHeight);
+
     const transform = new DOMMatrix();
     if (innerWidth >= innerHeight) {
-        transform.a = transform.d = dpr;
+        // Landscape mode
+        mainCanvasWidth = mainCanvas.width;
+        mainCanvasHeight = mainCanvas.height;
+        transform.a = 1;
+        transform.d = 1;
         transform.b = transform.c = transform.e = transform.f = 0;
-        demonCanvas.width = Math.floor(dpr * innerWidth);
-        demonCanvas.height = Math.floor(dpr * innerHeight);
     } else {
-        transform.a = transform.d = transform.e = 0;
-        transform.b = -dpr;
-        transform.c = dpr;
-        transform.f = dpr * innerWidth;
-        demonCanvas.width = Math.floor(dpr * innerHeight);
-        demonCanvas.height = Math.floor(dpr * innerWidth);
+        // Portrait mode
+        mainCanvasWidth = mainCanvas.height;
+        mainCanvasHeight = mainCanvas.width;
+        transform.a = 0;
+        transform.b = -1;
+        transform.c = 1;
+        transform.d = 0;
+        transform.e = 0;
+        transform.f = dpr * innerHeight;
     }
 
-    demonCtx = demonCanvas.getContext('2d');
-    if (!demonCtx) {
+    mainCtx = mainCanvas.getContext('2d');
+    if (!mainCtx) {
         return;
     }
-    demonCtx.setTransform(transform);
+    mainCtx.setTransform(transform);
 
-    screenHeight = demonCanvas.height;
+    screenHeight = mainCanvasHeight;
     screenWidth = screenHeight * PhysicalDimensions.WIDTH / PhysicalDimensions.HEIGHT;
-    if (screenWidth > demonCanvas.width) {
-        screenWidth = demonCanvas.width;
+    if (screenWidth > mainCanvasWidth) {
+        screenWidth = mainCanvasWidth;
         screenHeight = screenWidth * PhysicalDimensions.HEIGHT / PhysicalDimensions.WIDTH;
         screenX = 0;
-        screenY = Math.round((demonCanvas.height - screenHeight) / 2);
+        screenY = Math.round((mainCanvasHeight - screenHeight) / 2);
     } else {
-        screenX = Math.round((demonCanvas.width - screenWidth) / 2);
+        screenX = Math.round((mainCanvasWidth - screenWidth) / 2);
         screenY = 0;
     }
 
