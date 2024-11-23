@@ -3,7 +3,7 @@ import { acquireWakeLock, releaseWakeLock } from './wake-lock';
 import { NoParamVoidFunc } from './no-param-void-func';
 import { enter as enterStart } from './start';
 import { playSoundEffect } from './sfx';
-import { PhysicalDimensions, Resolution } from './graphics';
+import { PhysicalDimensions, Resolution, digitSprites } from './graphics';
 
 enum State {
     GAME_START
@@ -26,6 +26,7 @@ let screenX: number;
 let screenY: number;
 
 let state = State.GAME_START;
+let score = 12345;
 
 const updatePixelRatio = () => {
     if (removeMediaEventListener !== null) {
@@ -109,28 +110,30 @@ export function render() {
         return;
     }
     
-    ctx.fillStyle = 'blue';
-    ctx.fillRect(0, 0, Resolution.WIDTH, Resolution.HEIGHT);
-    ctx.strokeStyle = 'red';
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(0, 0);
-    ctx.lineTo(50, 50);
-    ctx.stroke();
-
-    console.log(`--11`);
-    mainCtx.fillStyle = 'yellow';
+    mainCtx.fillStyle = 'gray';
     mainCtx.fillRect(0, 0, mainCanvasWidth, mainCanvasHeight);
-    mainCtx.strokeStyle = 'red';
-    mainCtx.lineWidth = 1;
-    mainCtx.beginPath();
-    mainCtx.moveTo(0, 0);
-    mainCtx.lineTo(50, 50);
-    mainCtx.stroke();
+
+    ctx.fillStyle = 'black';
+    ctx.fillRect(0, 0, Resolution.WIDTH, Resolution.HEIGHT);
+
+    // draw score
+    if (score === 0) {
+        ctx.drawImage(digitSprites[0], 95, 18);
+    } else {
+        let s = score;
+        let x = 95;
+        while (true) {
+            ctx.drawImage(digitSprites[s % 10], x, 18);
+            s = Math.floor(s / 10);
+            if (s === 0) {
+                break;
+            }
+            x -= 8;
+        }
+    }
 
     mainCtx.imageSmoothingEnabled = false;
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
-    mainCtx.imageSmoothingEnabled = true;
 }
 
 function onKeyDown(e: KeyboardEvent) {
