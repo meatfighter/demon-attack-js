@@ -3,7 +3,7 @@ import { acquireWakeLock, releaseWakeLock } from './wake-lock';
 import { NoParamVoidFunc } from './no-param-void-func';
 import { enter as enterStart } from './start';
 import { playSoundEffect } from './sfx';
-import { PhysicalDimensions, Resolution, digitSprites } from './graphics';
+import { PhysicalDimensions, Resolution, digitSprites, demonSprites } from './graphics';
 
 enum State {
     GAME_START
@@ -131,6 +131,8 @@ export function render() {
             x -= 8;
         }
     }
+
+    ctx.drawImage(demonSprites[0][0][0], 0, 0);
 
     mainCtx.imageSmoothingEnabled = false;
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);

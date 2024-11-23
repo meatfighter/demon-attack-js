@@ -1,5 +1,5 @@
 class Color {
-    constructor(public r: number, public g: number, public b: number) {        
+    constructor(public readonly r: number, public readonly g: number, public readonly b: number) {        
     }
 }
 
@@ -21,9 +21,10 @@ export enum PhysicalDimensions {
 }
 
 export const digitSprites: HTMLCanvasElement[] = new Array<HTMLCanvasElement>(10);
+export const demonSprites: HTMLCanvasElement[][][] = new Array<HTMLCanvasElement[][]>(7); // level, demon, sprite
 
-export function createCanvas(width: number, height: number, 
-        callback: (canvas: HTMLCanvasElement, imageData: ImageData) => void) {
+export function createCanvas(width: number, height: number, callback: (imageData: ImageData) => void): 
+        HTMLCanvasElement {
 
     const canvas = document.createElement('canvas');
     canvas.width = width;
@@ -33,8 +34,9 @@ export function createCanvas(width: number, height: number,
         throw new Error('Failed to create canvas rendering context.');
     }
     const imageData = ctx.getImageData(0, 0, width, height);
-    callback(canvas, imageData);
+    callback(imageData);
     ctx.putImageData(imageData, 0, 0);
+    return canvas;
 }
 
 function extractPalette(): Color[] {
@@ -52,7 +54,6 @@ function extractPalette(): Color[] {
 }
 
 function setColor(imageData: ImageData, x: number, y: number, color: Color) {
-    console.log(`set color: ${x} ${y} ${color.r} ${color.g} ${color.b}`); // TODO REMOVE
     const offset = 4 * (y * imageData.width + x);
     const data = imageData.data;
     data[offset] = color.r;
@@ -64,22 +65,17 @@ function setColor(imageData: ImageData, x: number, y: number, color: Color) {
 function extractSprites() {
 
     enum Offsets {
-        ENEMY_COLS = 0,
+        DEMON_COLS = 0,
         SHIP_EXPLOSION_COLS = 56,
         PLAYER_SHIP_GFX = 61,
         LIVES_GFX = 73,
         EXPLOSION_GFX = 79,
         TELEPORT_GFX = 119,
-        ENEMY_1_GFX = 143,
-        ENEMY_2_GFX = 167,
-        ENEMY_3_GFX = 191,
-        ENEMY_4_GFX = 215,
-        ENEMY_5_GFX = 239,
-        ENEMY_6_GFX = 263,
+        DEMON_GFX = 143,
         BOOM_GFX = 287,
         SMALL_DEMON_GFX = 311,
         DIGITS_GFX = 335,
-        ENEMY_SHOT = 435,
+        DEMON_SHOT = 435,
     }
 
     const palette = extractPalette();
@@ -91,15 +87,38 @@ function extractSprites() {
         + 'dMmIyHSDIABEQkIyMUCAAgJCgkIycYABAgSERCRz8AAAAAAQEAAAAAAAMFAwAAAAAGCQkJBgAAIAQRgBRCkABABBKgFECEAAAgFGgIFCAAAA'
         + 'AQKGzGggAAgoLWbAAAAABEgoLGfBB8ZGRkZGRkZHwAGBgYGBgYGBg4AHxMTEA8DExMfAB8TEwMOAxMTHwADAx+TExMTExMAHxMTAwMfEBMfA'
         + 'B8TExMfEBMTHwAMDAwGBgMTEx8AHxMTEx8ZGRkfAB8TEwMfExMTHwAgCAQUEGEiEJACAQBgSIRRA==');
+
+    // demons
+    for (let level = 0; level < 7; ++level) {
+        const colOffset = level << 3;
+        demonSprites[level] = new Array<HTMLCanvasElement[]>(6);
+        for (let demon = 0; demon < 6; ++demon) {
+            demonSprites[level][demon] = new Array<HTMLCanvasElement>(3);
+            const demonOffset = Offsets.DEMON_GFX + 24 * demon;
+            for (let sprite = 0; sprite < 3; ++sprite) {                 
+                const spriteOffset = demonOffset + (sprite << 3);
+                demonSprites[level][demon][sprite] = createCanvas(16, 8, imageData => {
+                    for (let y = 0; y < 8; ++y) {
+                        const col = palette[binStr.charCodeAt(Offsets.DEMON_COLS + colOffset + y)];
+                        const byte = binStr.charCodeAt(spriteOffset + y);                
+                        for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
+                            if ((byte & mask) !== 0) {
+                                setColor(imageData, x, 7 - y, col);
+                                setColor(imageData, 15 - x, 7 - y, col);
+                            }
+                        }
+                    }
+                });                
+            }
+        }
+    }
       
     // digits    
     for (let i = 0; i < 10; ++i) {
-        createCanvas(8, 9, (canvas, imageData) => {
-            digitSprites[i] = canvas;
+        digitSprites[i] = createCanvas(8, 9, imageData => {
             const offset = Offsets.DIGITS_GFX + 10 * (i + 1) - 2;
             for (let y = 0; y < 9; ++y) {
-                const byte = binStr.charCodeAt(offset - y);
-                console.log(`byte: ${byte.toString(16)}`); // TODO REMOVE
+                const byte = binStr.charCodeAt(offset - y);                
                 for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
                     if ((byte & mask) !== 0) {                        
                         setColor(imageData, x, y, digitCol);
