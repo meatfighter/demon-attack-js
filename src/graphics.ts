@@ -266,11 +266,7 @@ function extractSprites() {
 
     // TODO
     // teletransportation graphics 
-    // 1. form demons
-    // 2. explode demons when they do not split
     // 3. explode split demons (left half)
-    // boom
-    // explode demons when they split
 }
 
 extractSprites();
