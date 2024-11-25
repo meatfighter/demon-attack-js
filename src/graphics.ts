@@ -1,4 +1,4 @@
-class RGB {
+class RGBColor {
     constructor(public readonly r: number, public readonly g: number, public readonly b: number) {        
     }
 }
@@ -27,15 +27,18 @@ export class SpriteAndMask {
     }
 }
 
-export const digitSprites: Sprite[] = new Array<Sprite>(10);
-export const demonSpriteAndMasks: SpriteAndMask[][][] = new Array<SpriteAndMask[][]>(7); // level, demon, sprite
-export const splitDemonSpriteAndMasks: SpriteAndMask[][] = new Array<SpriteAndMask[]>(7); // level, sprite
-export let cannonSpriteAndMask: SpriteAndMask;
-export const bunkerSprites: Sprite[] = new Array<Sprite>(62);
 export const baseSprites: Sprite[] = new Array<Sprite>(121);
+export const bunkerSprites: Sprite[] = new Array<Sprite>(62);
+export const digitSprites: Sprite[] = new Array<Sprite>(10);
+
+export const demonSpriteAndMasks: SpriteAndMask[][][] = new Array<SpriteAndMask[][]>(7); // level, demon, sprite
 export const demonExplosionSprites: Sprite[][][] = new Array<Sprite[][]>(7); // level, (0=explodes, 1=splits), sprite
 export const demonFormsSprites: Sprite[][][] = new Array<Sprite[][]>(7); // level, sprite, (0=left, 1=right)
+
+export const splitDemonSpriteAndMasks: SpriteAndMask[][] = new Array<SpriteAndMask[]>(7); // level, sprite
 export const splitDemonExplosionSprites: Sprite[][] = new Array<Sprite[]>(7); // level, sprite
+
+export let cannonSpriteAndMask: SpriteAndMask;
 export const cannonExplosionSprites: Sprite[] = new Array<Sprite>(8);
 
 function createSprite(width: number, height: number, callback: (imageData: ImageData) => void): Sprite {
@@ -67,8 +70,8 @@ function createSpriteAndMask(width: number, height: number, callback: (imageData
     return new SpriteAndMask(sprite, mask);
 }
 
-function extractPalette(): RGB[] {
-    const palette = new Array<RGB>(256);
+function extractPalette(): RGBColor[] {
+    const palette = new Array<RGBColor>(256);
     const binStr = atob('AAAAPz8+ZGRjhISDoqKhurq50tLR6urpPT0AXl4Ke3sVmZkgtLQqzc005uY+/f1IcSMAhj0LmVcYrW8mvYYyzZs+3LBJ6s'
         + 'JUhhUAmi8OrkgewGEv0Xc+4I1N76Jb/bVoigAAnhMSsSgnwj080lFQ4mRj73V0/YaFeQBYjRJuoCeEsTuYwE6q0GG83XHM6oLcRQB4XRKPci'
         + 'ekiDu5m07KrmHcv3Hs0IL7DgCFKROZQyitXT2/dFHQi2TfoXXutYb7AACKEhOdJCiwNz3BSVHRWmTganXueYb7ABV9EjGTJEynN2e7SYDMWp'
@@ -76,12 +79,12 @@ function extractPalette(): RGB[] {
         + 'IAK1QRR3MjY5M2fbBIlctZreVpwv14Jy4ARU4PYmshfogzl6NDsLxTx9Ri3epwPSMAXkINe18dmXsttJY7za9K5sdX/d1k');         
     for (let i = 0x00; i <= 0xFF; ++i) {       
         const j = 3 * (i >> 1);
-        palette[i] = new RGB(binStr.charCodeAt(j), binStr.charCodeAt(j + 1), binStr.charCodeAt(j + 2));
+        palette[i] = new RGBColor(binStr.charCodeAt(j), binStr.charCodeAt(j + 1), binStr.charCodeAt(j + 2));
     }
     return palette;
 }
 
-function setColor(imageData: ImageData, x: number, y: number, color: RGB) {
+function setColor(imageData: ImageData, x: number, y: number, color: RGBColor) {
     const offset = 4 * (y * imageData.width + x);
     const data = imageData.data;
     data[offset] = color.r;
@@ -94,7 +97,7 @@ function extractSprites() {
 
     enum Offsets {
         DEMON_COLS = 0,
-        CANNON_EXPLOSION_COLS = 56,
+        CANNON_EXPLODES_COLS = 56,
         CANNON_GFX = 61,
         BUNKER_GFX = 73,
         CANNON_EXPLODES_GFX = 79,
@@ -120,14 +123,34 @@ function extractSprites() {
     cannonSpriteAndMask = createSpriteAndMask(7, 12, imageData => {
         const offset = Offsets.CANNON_GFX + 11;
         for (let y = 0; y < 12; ++y) {
-            const byte = binStr.charCodeAt(offset - y);                
+            const byte = binStr.charCodeAt(offset - y);
             for (let x = 0, mask = 0x80; x < 7; ++x, mask >>= 1) {
-                if ((byte & mask) !== 0) {                        
+                if ((byte & mask) !== 0) {
                     setColor(imageData, x, y, cannonCol);
                 }
             }
         }
     });
+
+    // cannon explodes
+    for (let sprite = 0; sprite < 8; ++sprite) {
+        const spriteOffset = Offsets.CANNON_EXPLODES_GFX + 5 * sprite;
+        cannonExplosionSprites[sprite] = createSprite(16, 34, imageData => {
+            for (let y = 0; y < 5; ++y) {
+                const col = palette[binStr.charCodeAt(Offsets.CANNON_EXPLODES_COLS + y)];
+                const yOffset = 32 - (y << 3);
+                const byte = binStr.charCodeAt(spriteOffset + y);
+                for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
+                    if ((byte & mask) !== 0) {
+                        setColor(imageData, x, yOffset, col);
+                        setColor(imageData, 15 - x, yOffset, col);
+                        setColor(imageData, x, yOffset + 1, col);
+                        setColor(imageData, 15 - x, yOffset + 1, col);
+                    }
+                }
+            }
+        });
+    }
 
     // bunkers
     for (let i = 0; i < 62; ++i) {
@@ -137,7 +160,7 @@ function extractSprites() {
             for (let y = 0; y < 5; ++y) {
                 const byte = binStr.charCodeAt(offset - y);
                 for (let x = 0, mask = 0x20; x < 3; ++x, mask >>= 1) {
-                    if ((byte & mask) !== 0) {                        
+                    if ((byte & mask) !== 0) {
                         setColor(imageData, x, y, bunkerCol);
                     }
                 }
@@ -151,9 +174,9 @@ function extractSprites() {
         digitSprites[i] = createSprite(6, 9, imageData => {
             const offset = Offsets.DIGITS_GFX + 10 * (i + 1) - 2;
             for (let y = 0; y < 9; ++y) {
-                const byte = binStr.charCodeAt(offset - y);                
+                const byte = binStr.charCodeAt(offset - y);
                 for (let x = 0, mask = 0x40; x < 6; ++x, mask >>= 1) {
-                    if ((byte & mask) !== 0) {                        
+                    if ((byte & mask) !== 0) {
                         setColor(imageData, x, y, digitCol);
                     }
                 }

@@ -4,7 +4,8 @@ import { NoParamVoidFunc } from './no-param-void-func';
 import { enter as enterStart } from './start';
 import { playSoundEffect } from './sfx';
 import { PhysicalDimensions, Resolution, digitSprites, demonSpriteAndMasks, cannonSpriteAndMask, bunkerSprites, 
-    baseSprites, splitDemonSpriteAndMasks, demonExplosionSprites, demonFormsSprites, splitDemonExplosionSprites } from './graphics';
+    baseSprites, splitDemonSpriteAndMasks, demonExplosionSprites, demonFormsSprites, splitDemonExplosionSprites,
+    cannonExplosionSprites } from './graphics';
 
 enum State {
     GAME_START
@@ -167,9 +168,17 @@ export function render() {
     //     }
     // }
 
-    for (let i = 0; i < 3; ++i) {
-        ctx.drawImage(splitDemonExplosionSprites[0][i], 16 * i, 32);
+    // for (let i = 0; i < 3; ++i) {
+    //     ctx.drawImage(splitDemonExplosionSprites[0][i], 16 * i, 32);
+    // }
+
+    for (let i = 0; i < 4; ++i) {
+        ctx.drawImage(cannonExplosionSprites[i], i * 40, 16);
     }
+
+    for (let i = 0; i < 4; ++i) {
+        ctx.drawImage(cannonExplosionSprites[4 + i], i * 40, 116);
+    }    
 
     mainCtx.imageSmoothingEnabled = false;
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
