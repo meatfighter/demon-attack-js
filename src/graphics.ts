@@ -27,6 +27,8 @@ export class SpriteAndMask {
     }
 }
 
+export const colors: string[] = new Array<string>(256);
+
 export const baseSprites: Sprite[] = new Array<Sprite>(121);
 export const bunkerSprites: Sprite[] = new Array<Sprite>(62);
 export const digitSprites: Sprite[] = new Array<Sprite>(10);
@@ -79,7 +81,9 @@ function extractPalette(): RGBColor[] {
         + 'IAK1QRR3MjY5M2fbBIlctZreVpwv14Jy4ARU4PYmshfogzl6NDsLxTx9Ri3epwPSMAXkINe18dmXsttJY7za9K5sdX/d1k');         
     for (let i = 0x00; i <= 0xFF; ++i) {       
         const j = 3 * (i >> 1);
-        palette[i] = new RGBColor(binStr.charCodeAt(j), binStr.charCodeAt(j + 1), binStr.charCodeAt(j + 2));
+        const col = new RGBColor(binStr.charCodeAt(j), binStr.charCodeAt(j + 1), binStr.charCodeAt(j + 2));
+        palette[i] = col;
+        colors[i] = `#${((col.r << 16) | (col.g << 8) | col.b).toString(16).padStart(6, '0')}`;
     }
     return palette;
 }

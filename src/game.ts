@@ -1,15 +1,11 @@
-import { FRAMES_PER_SECOND, startAnimation, stopAnimation } from './animate';
+import { startAnimation, stopAnimation } from './animate';
 import { acquireWakeLock, releaseWakeLock } from './wake-lock';
 import { NoParamVoidFunc } from './no-param-void-func';
 import { enter as enterStart } from './start';
 import { playSoundEffect } from './sfx';
-import { PhysicalDimensions, Resolution, digitSprites, demonSpriteAndMasks, cannonSpriteAndMask, bunkerSprites, 
-    baseSprites, splitDemonSpriteAndMasks, demonExplosionSprites, demonFormsSprites, splitDemonExplosionSprites,
-    cannonExplosionSprites } from './graphics';
-
-enum State {
-    GAME_START
-}
+import { PhysicalDimensions, Resolution } from './graphics';
+import { startInput, stopInput } from './input';
+import { renderScreen } from './game-logic';
 
 let mainCanvas: HTMLCanvasElement | null;
 let mainCtx: CanvasRenderingContext2D | null;
@@ -27,11 +23,7 @@ let screenHeight: number;
 let screenX: number;
 let screenY: number;
 
-let state = State.GAME_START;
-let score = 12345;
-let bunkers = 6;
-
-const updatePixelRatio = () => {
+function updatePixelRatio() {
     if (removeMediaEventListener !== null) {
         removeMediaEventListener();
         removeMediaEventListener = null;
@@ -53,11 +45,9 @@ export function enter() {
 
     document.body.style.backgroundColor = '#C2BCB1';
 
-    window.addEventListener('resize', windowResized);
-    window.addEventListener('touchmove', onTouchMove, { passive: false });
+    window.addEventListener('resize', windowResized);    
     document.addEventListener('visibilitychange', onVisibilityChanged);
-    document.addEventListener('keydown', onKeyDown);
-    document.addEventListener('keyup', onKeyUp);
+    startInput();
 
     screenCanvas = document.createElement('canvas');
     screenCanvas.width = Resolution.WIDTH;
@@ -77,31 +67,14 @@ export function exit() {
     exiting = true;
     stopAnimation();
     releaseWakeLock();
-    window.removeEventListener('resize', windowResized);
-    window.removeEventListener('touchmove', onTouchMove);
+    window.removeEventListener('resize', windowResized);    
     document.removeEventListener('visibilitychange', onVisibilityChanged);
-    document.removeEventListener('keydown', onKeyDown);
-    document.removeEventListener('keyup', onKeyUp);
+    stopInput();
+    
     if (removeMediaEventListener !== null) {
         removeMediaEventListener();
         removeMediaEventListener = null;
     }
-}
-
-function onTouchMove(e: TouchEvent) {
-    e.preventDefault();
-}
-
-export function update() {
-    switch (state) {
-        case State.GAME_START:
-            updateGameStart();
-            break;
-    }
-}
-
-function updateGameStart() {
-
 }
 
 export function render() {
@@ -116,78 +89,11 @@ export function render() {
     mainCtx.fillStyle = 'gray';
     mainCtx.fillRect(0, 0, mainCanvasWidth, mainCanvasHeight);
 
-    ctx.fillStyle = 'black';
-    ctx.fillRect(0, 0, Resolution.WIDTH, Resolution.HEIGHT);
-
-    ctx.drawImage(baseSprites[0], 0, 199, Resolution.WIDTH, 29);
-
-    // draw score
-    // {
-    //     let s = score;
-    //     let x = 96;
-    //     while (true) {
-    //         ctx.drawImage(digitSprites[s % 10], x, 18);
-    //         s = Math.floor(s / 10);
-    //         if (s === 0) {
-    //             break;
-    //         }
-    //         x -= 8;
-    //     }
-    // }
-
-    // ctx.fillStyle = 'white';
-    // for (let i = 0; i < 6; ++i) {
-    //     for (let j = 0; j < 3; ++j) {
-    //         ctx.drawImage(demonSpriteAndMasks[0][i][j].sprite, 16 * j, 8 * i);
-            
-    //         const { mask } = demonSpriteAndMasks[0][i][j];
-    //         for (let y = 0; y < 8; ++y) {
-    //             for (let x = 0; x < 16; ++x) {
-    //                 if (mask[y][x]) {
-    //                     ctx.fillRect(16 * j + x, 8 * i + y, 1, 1);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }  
-    
-    for (let i = 0; i < bunkers; ++i) {
-        ctx.drawImage(bunkerSprites[0], 17 + (i << 3), 199);
-    }
-
-    // for (let i = 0; i < 2; ++i) {
-    //     for (let j = 0; j < 3; ++j) {
-    //         ctx.drawImage(demonExplosionSprites[0][i][j], 32 * j, 16 * i);
-    //     }
-    // }
-
     ctx.imageSmoothingEnabled = false;
-    // for (let i = 0; i < 3; ++i) {
-    //     for (let j = 0; j < 2; ++j) {
-    //         ctx.drawImage(demonFormsSprites[0][i][j], 48 * j, 16 * i, 32, 8);
-    //     }
-    // }
-
-    // for (let i = 0; i < 3; ++i) {
-    //     ctx.drawImage(splitDemonExplosionSprites[0][i], 16 * i, 32);
-    // }
-
-    for (let i = 0; i < 4; ++i) {
-        ctx.drawImage(cannonExplosionSprites[i], i * 40, 16);
-    }
-
-    for (let i = 0; i < 4; ++i) {
-        ctx.drawImage(cannonExplosionSprites[4 + i], i * 40, 116);
-    }    
+    renderScreen(ctx);
 
     mainCtx.imageSmoothingEnabled = false;
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
-}
-
-function onKeyDown(e: KeyboardEvent) {
-}
-
-function onKeyUp(e: KeyboardEvent) {
 }
 
 function windowResized() {
