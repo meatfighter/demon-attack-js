@@ -35,6 +35,8 @@ export const bunkerSprites: Sprite[] = new Array<Sprite>(62);
 export const baseSprites: Sprite[] = new Array<Sprite>(121);
 export const demonExplosionSprites: Sprite[][][] = new Array<Sprite[][]>(7); // level, (0=explodes, 1=splits), sprite
 export const demonFormsSprites: Sprite[][][] = new Array<Sprite[][]>(7); // level, sprite, (0=left, 1=right)
+export const splitDemonExplosionSprites: Sprite[][] = new Array<Sprite[]>(7); // level, sprite
+export const cannonExplosionSprites: Sprite[] = new Array<Sprite>(8);
 
 function createSprite(width: number, height: number, callback: (imageData: ImageData) => void): Sprite {
     const sprite = document.createElement('canvas');
@@ -142,6 +144,34 @@ function extractSprites() {
             }
         });
     }
+     
+    // digits    
+    const digitCol = palette[0x2C];
+    for (let i = 0; i < 10; ++i) {
+        digitSprites[i] = createSprite(6, 9, imageData => {
+            const offset = Offsets.DIGITS_GFX + 10 * (i + 1) - 2;
+            for (let y = 0; y < 9; ++y) {
+                const byte = binStr.charCodeAt(offset - y);                
+                for (let x = 0, mask = 0x40; x < 6; ++x, mask >>= 1) {
+                    if ((byte & mask) !== 0) {                        
+                        setColor(imageData, x, y, digitCol);
+                    }
+                }
+            }
+        });        
+    }
+    
+    // bases
+    for (let i = 0; i < 121; ++i) {
+        baseSprites[i] = createSprite(1, 29, imageData => {
+            for (let y = 0, j = (i === 120) ? 0x4C : ((0x8C + i) & 0xFF); y < 29; ++y) {
+                setColor(imageData, 0, y, palette[j & 0xFF]);
+                if (y < 6) {
+                    j -= 2;
+                }
+            }
+        });
+    }
 
     // demons
     for (let level = 0; level < 7; ++level) {
@@ -213,6 +243,26 @@ function extractSprites() {
         }
     }
 
+    // split demon explodes
+    for (let level = 0; level < 7; ++level) {
+        const colOffset = Offsets.DEMON_COLS + (level << 3);
+        splitDemonExplosionSprites[level] = new Array<Sprite>(3);
+        for (let sprite = 0; sprite < 3; ++sprite) {
+            const spriteOffset = Offsets.DEMON_SPLITS_GFX + (sprite << 3);
+            splitDemonExplosionSprites[level][2 - sprite] = createSprite(8, 8, imageData => {
+                for (let y = 0; y < 8; ++y) {
+                    const col = palette[binStr.charCodeAt(colOffset + y)];
+                    const byte = binStr.charCodeAt(spriteOffset + y);
+                    for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
+                        if ((byte & mask) !== 0) {
+                            setColor(imageData, x, 7 - y, col);
+                        }
+                    }
+                }
+            });
+        }
+    }
+
     // demon forms
     for (let level = 0; level < 7; ++level) {
         const colOffset = Offsets.DEMON_COLS + (level << 3);
@@ -234,39 +284,7 @@ function extractSprites() {
                 });
             }
         }
-    }
-      
-    // digits    
-    const digitCol = palette[0x2C];
-    for (let i = 0; i < 10; ++i) {
-        digitSprites[i] = createSprite(6, 9, imageData => {
-            const offset = Offsets.DIGITS_GFX + 10 * (i + 1) - 2;
-            for (let y = 0; y < 9; ++y) {
-                const byte = binStr.charCodeAt(offset - y);                
-                for (let x = 0, mask = 0x40; x < 6; ++x, mask >>= 1) {
-                    if ((byte & mask) !== 0) {                        
-                        setColor(imageData, x, y, digitCol);
-                    }
-                }
-            }
-        });        
-    }
-    
-    // bases
-    for (let i = 0; i < 121; ++i) {
-        baseSprites[i] = createSprite(1, 29, imageData => {
-            for (let y = 0, j = (i === 120) ? 0x4C : ((0x8C + i) & 0xFF); y < 29; ++y) {
-                setColor(imageData, 0, y, palette[j & 0xFF]);
-                if (y < 6) {
-                    j -= 2;
-                }
-            }
-        });
-    }
-
-    // TODO
-    // teletransportation graphics 
-    // 3. explode split demons (left half)
+    }    
 }
 
 extractSprites();
