@@ -118,6 +118,163 @@ function extractSprites() {
         + 'AQKGzGggAAgoLWbAAAAABEgoLGfBB8ZGRkZGRkZHwAGBgYGBgYGBg4AHxMTEA8DExMfAB8TEwMOAxMTHwADAx+TExMTExMAHxMTAwMfEBMfA'
         + 'B8TExMfEBMTHwAMDAwGBgMTEx8AHxMTEx8ZGRkfAB8TEwMfExMTHwAgCAQUEGEiEJACAQBgSIRRA==');
 
+    // bases
+    for (let i = 0; i < 121; ++i) {
+        baseSprites[i] = createSprite(1, 29, imageData => {
+            for (let y = 0, j = (i === 120) ? 0x4C : ((0x8C + i) & 0xFF); y < 29; ++y) {
+                setColor(imageData, 0, y, palette[j & 0xFF]);
+                if (y < 6) {
+                    j -= 2;
+                }
+            }
+        });
+    }    
+
+    // bunkers
+    for (let i = 0; i < 62; ++i) {
+        const bunkerCol = palette[(i === 0) ? 0x4C : (0xC2 + i)];
+        bunkerSprites[i] = createSprite(3, 5, imageData => {
+            const offset = Offsets.BUNKER_GFX + 5;
+            for (let y = 0; y < 5; ++y) {
+                const byte = binStr.charCodeAt(offset - y);
+                for (let x = 0, mask = 0x20; x < 3; ++x, mask >>= 1) {
+                    if ((byte & mask) !== 0) {
+                        setColor(imageData, x, y, bunkerCol);
+                    }
+                }
+            }
+        });
+    }
+
+    // digits    
+    const digitCol = palette[0x2C];
+    for (let i = 0; i < 10; ++i) {
+        digitSprites[i] = createSprite(6, 9, imageData => {
+            const offset = Offsets.DIGITS_GFX + 10 * (i + 1) - 2;
+            for (let y = 0; y < 9; ++y) {
+                const byte = binStr.charCodeAt(offset - y);
+                for (let x = 0, mask = 0x40; x < 6; ++x, mask >>= 1) {
+                    if ((byte & mask) !== 0) {
+                        setColor(imageData, x, y, digitCol);
+                    }
+                }
+            }
+        });        
+    }
+  
+    // demons
+    for (let level = 0; level < 7; ++level) {
+        const colOffset = Offsets.DEMON_COLS + (level << 3);
+        demonSpriteAndMasks[level] = new Array<SpriteAndMask[]>(6);
+        for (let demon = 0; demon < 6; ++demon) {
+            const demonOffset = Offsets.DEMON_GFX + 24 * demon;
+            demonSpriteAndMasks[level][demon] = new Array<SpriteAndMask>(3);            
+            for (let sprite = 0; sprite < 3; ++sprite) {
+                const spriteOffset = demonOffset + (sprite << 3);
+                demonSpriteAndMasks[level][demon][sprite] = createSpriteAndMask(16, 8, imageData => {
+                    for (let y = 0; y < 8; ++y) {
+                        const col = palette[binStr.charCodeAt(colOffset + y)];
+                        const byte = binStr.charCodeAt(spriteOffset + y);
+                        for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
+                            if ((byte & mask) !== 0) {
+                                setColor(imageData, x, 7 - y, col);
+                                setColor(imageData, 15 - x, 7 - y, col);
+                            }
+                        }
+                    }
+                });                
+            }
+        }
+    }
+   
+    // demon explodes / splits
+    for (let level = 0; level < 7; ++level) {
+        const colOffset = Offsets.DEMON_COLS + (level << 3);
+        demonExplosionSprites[level] = new Array<Sprite[]>(2);
+        for (let splits = 0; splits < 2; ++splits) {            
+            const splitsOffset = (splits === 0) ? Offsets.DEMON_EXPLODES_GFX : Offsets.DEMON_SPLITS_GFX;
+            demonExplosionSprites[level][splits] = new Array<Sprite>(3);
+            for (let sprite = 0; sprite < 3; ++sprite) {
+                const spriteOffset = splitsOffset + (sprite << 3);
+                demonExplosionSprites[level][splits][2 - sprite] = createSprite(16, 8, imageData => {
+                    for (let y = 0; y < 8; ++y) {
+                        const col = palette[binStr.charCodeAt(colOffset + y)];
+                        const byte = binStr.charCodeAt(spriteOffset + y);
+                        for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
+                            if ((byte & mask) !== 0) {
+                                setColor(imageData, x, 7 - y, col);
+                                setColor(imageData, 15 - x, 7 - y, col);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    // demon forms
+    for (let level = 0; level < 7; ++level) {
+        const colOffset = Offsets.DEMON_COLS + (level << 3);
+        demonFormsSprites[level] = new Array<Sprite[]>(3);
+        for (let sprite = 0; sprite < 3; ++sprite) {
+            const spriteOffset = Offsets.DEMON_EXPLODES_GFX + (sprite << 3);
+            demonFormsSprites[level][sprite] = new Array<Sprite>(2);
+            for (let right = 0; right < 2; ++right) {
+                demonFormsSprites[level][sprite][right] = createSprite(8, 8, imageData => {
+                    for (let y = 0; y < 8; ++y) {
+                        const col = palette[binStr.charCodeAt(colOffset + y)];
+                        const byte = binStr.charCodeAt(spriteOffset + y);
+                        for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
+                            if ((byte & mask) !== 0) {
+                                setColor(imageData, (right === 1) ? 7 - x : x, 7 - y, col);
+                            }
+                        }
+                    }
+                });
+            }
+        }
+    }
+
+    // split demons
+    for (let level = 0; level < 7; ++level) {
+        const colOffset = Offsets.DEMON_COLS + (level << 3);
+        splitDemonSpriteAndMasks[level] = new Array<SpriteAndMask>(3);
+        for (let sprite = 0; sprite < 3; ++sprite) {
+            const spriteOffset = Offsets.SPLIT_DEMON_GFX + (sprite << 3);
+            splitDemonSpriteAndMasks[level][sprite] = createSpriteAndMask(8, 8, imageData => {
+                for (let y = 0; y < 8; ++y) {
+                    const col = palette[binStr.charCodeAt(colOffset + y)];
+                    const byte = binStr.charCodeAt(spriteOffset + y);
+                    for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
+                        if ((byte & mask) !== 0) {
+                            setColor(imageData, x, 7 - y, col);
+                        }
+                    }
+                }
+            });                
+        }
+    }
+    
+    // split demon explodes
+    for (let level = 0; level < 7; ++level) {
+        const colOffset = Offsets.DEMON_COLS + (level << 3);
+        splitDemonExplosionSprites[level] = new Array<Sprite>(3);
+        for (let sprite = 0; sprite < 3; ++sprite) {
+            const spriteOffset = Offsets.DEMON_SPLITS_GFX + (sprite << 3);
+            splitDemonExplosionSprites[level][2 - sprite] = createSprite(8, 8, imageData => {
+                for (let y = 0; y < 8; ++y) {
+                    const col = palette[binStr.charCodeAt(colOffset + y)];
+                    const byte = binStr.charCodeAt(spriteOffset + y);
+                    for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
+                        if ((byte & mask) !== 0) {
+                            setColor(imageData, x, 7 - y, col);
+                        }
+                    }
+                }
+            });
+        }
+    }    
+    
     // cannon
     const cannonCol = palette[0x56];
     cannonSpriteAndMask = createSpriteAndMask(7, 12, imageData => {
@@ -150,163 +307,6 @@ function extractSprites() {
                 }
             }
         });
-    }
-
-    // bunkers
-    for (let i = 0; i < 62; ++i) {
-        const bunkerCol = palette[(i === 0) ? 0x4C : (0xC2 + i)];
-        bunkerSprites[i] = createSprite(3, 5, imageData => {
-            const offset = Offsets.BUNKER_GFX + 5;
-            for (let y = 0; y < 5; ++y) {
-                const byte = binStr.charCodeAt(offset - y);
-                for (let x = 0, mask = 0x20; x < 3; ++x, mask >>= 1) {
-                    if ((byte & mask) !== 0) {
-                        setColor(imageData, x, y, bunkerCol);
-                    }
-                }
-            }
-        });
-    }
-     
-    // digits    
-    const digitCol = palette[0x2C];
-    for (let i = 0; i < 10; ++i) {
-        digitSprites[i] = createSprite(6, 9, imageData => {
-            const offset = Offsets.DIGITS_GFX + 10 * (i + 1) - 2;
-            for (let y = 0; y < 9; ++y) {
-                const byte = binStr.charCodeAt(offset - y);
-                for (let x = 0, mask = 0x40; x < 6; ++x, mask >>= 1) {
-                    if ((byte & mask) !== 0) {
-                        setColor(imageData, x, y, digitCol);
-                    }
-                }
-            }
-        });        
-    }
-    
-    // bases
-    for (let i = 0; i < 121; ++i) {
-        baseSprites[i] = createSprite(1, 29, imageData => {
-            for (let y = 0, j = (i === 120) ? 0x4C : ((0x8C + i) & 0xFF); y < 29; ++y) {
-                setColor(imageData, 0, y, palette[j & 0xFF]);
-                if (y < 6) {
-                    j -= 2;
-                }
-            }
-        });
-    }
-
-    // demons
-    for (let level = 0; level < 7; ++level) {
-        const colOffset = Offsets.DEMON_COLS + (level << 3);
-        demonSpriteAndMasks[level] = new Array<SpriteAndMask[]>(6);
-        for (let demon = 0; demon < 6; ++demon) {
-            const demonOffset = Offsets.DEMON_GFX + 24 * demon;
-            demonSpriteAndMasks[level][demon] = new Array<SpriteAndMask>(3);            
-            for (let sprite = 0; sprite < 3; ++sprite) {
-                const spriteOffset = demonOffset + (sprite << 3);
-                demonSpriteAndMasks[level][demon][sprite] = createSpriteAndMask(16, 8, imageData => {
-                    for (let y = 0; y < 8; ++y) {
-                        const col = palette[binStr.charCodeAt(colOffset + y)];
-                        const byte = binStr.charCodeAt(spriteOffset + y);
-                        for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
-                            if ((byte & mask) !== 0) {
-                                setColor(imageData, x, 7 - y, col);
-                                setColor(imageData, 15 - x, 7 - y, col);
-                            }
-                        }
-                    }
-                });                
-            }
-        }
-    }
-
-    // split demons
-    for (let level = 0; level < 7; ++level) {
-        const colOffset = Offsets.DEMON_COLS + (level << 3);
-        splitDemonSpriteAndMasks[level] = new Array<SpriteAndMask>(3);
-        for (let sprite = 0; sprite < 3; ++sprite) {
-            const spriteOffset = Offsets.SPLIT_DEMON_GFX + (sprite << 3);
-            splitDemonSpriteAndMasks[level][sprite] = createSpriteAndMask(8, 8, imageData => {
-                for (let y = 0; y < 8; ++y) {
-                    const col = palette[binStr.charCodeAt(colOffset + y)];
-                    const byte = binStr.charCodeAt(spriteOffset + y);
-                    for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
-                        if ((byte & mask) !== 0) {
-                            setColor(imageData, x, 7 - y, col);
-                        }
-                    }
-                }
-            });                
-        }
-    }
-    
-    // demon explodes / splits
-    for (let level = 0; level < 7; ++level) {
-        const colOffset = Offsets.DEMON_COLS + (level << 3);
-        demonExplosionSprites[level] = new Array<Sprite[]>(2);
-        for (let splits = 0; splits < 2; ++splits) {            
-            const splitsOffset = (splits === 0) ? Offsets.DEMON_EXPLODES_GFX : Offsets.DEMON_SPLITS_GFX;
-            demonExplosionSprites[level][splits] = new Array<Sprite>(3);
-            for (let sprite = 0; sprite < 3; ++sprite) {
-                const spriteOffset = splitsOffset + (sprite << 3);
-                demonExplosionSprites[level][splits][2 - sprite] = createSprite(16, 8, imageData => {
-                    for (let y = 0; y < 8; ++y) {
-                        const col = palette[binStr.charCodeAt(colOffset + y)];
-                        const byte = binStr.charCodeAt(spriteOffset + y);
-                        for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
-                            if ((byte & mask) !== 0) {
-                                setColor(imageData, x, 7 - y, col);
-                                setColor(imageData, 15 - x, 7 - y, col);
-                            }
-                        }
-                    }
-                });
-            }
-        }
-    }
-
-    // split demon explodes
-    for (let level = 0; level < 7; ++level) {
-        const colOffset = Offsets.DEMON_COLS + (level << 3);
-        splitDemonExplosionSprites[level] = new Array<Sprite>(3);
-        for (let sprite = 0; sprite < 3; ++sprite) {
-            const spriteOffset = Offsets.DEMON_SPLITS_GFX + (sprite << 3);
-            splitDemonExplosionSprites[level][2 - sprite] = createSprite(8, 8, imageData => {
-                for (let y = 0; y < 8; ++y) {
-                    const col = palette[binStr.charCodeAt(colOffset + y)];
-                    const byte = binStr.charCodeAt(spriteOffset + y);
-                    for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
-                        if ((byte & mask) !== 0) {
-                            setColor(imageData, x, 7 - y, col);
-                        }
-                    }
-                }
-            });
-        }
-    }
-
-    // demon forms
-    for (let level = 0; level < 7; ++level) {
-        const colOffset = Offsets.DEMON_COLS + (level << 3);
-        demonFormsSprites[level] = new Array<Sprite[]>(3);
-        for (let sprite = 0; sprite < 3; ++sprite) {
-            const spriteOffset = Offsets.DEMON_EXPLODES_GFX + (sprite << 3);
-            demonFormsSprites[level][sprite] = new Array<Sprite>(2);
-            for (let right = 0; right < 2; ++right) {
-                demonFormsSprites[level][sprite][right] = createSprite(8, 8, imageData => {
-                    for (let y = 0; y < 8; ++y) {
-                        const col = palette[binStr.charCodeAt(colOffset + y)];
-                        const byte = binStr.charCodeAt(spriteOffset + y);
-                        for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
-                            if ((byte & mask) !== 0) {
-                                setColor(imageData, (right === 1) ? 7 - x : x, 7 - y, col);
-                            }
-                        }
-                    }
-                });
-            }
-        }
     }    
 }
 
