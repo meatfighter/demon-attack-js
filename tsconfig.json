@@ -7,6 +7,10 @@
     "skipLibCheck": true,
     "forceConsistentCasingInFileNames": true,
     "sourceMap": true,
+    "baseUrl": ".",
+    "paths": {
+      "@/*": ["src/*"],
+    },
     "rootDir": "./src",
     "outDir": "./public_html/app/app/scripts",
     "moduleResolution": "Node",
@@ -16,9 +20,11 @@
       "WebWorker"
     ]
   },
+
   "include": [
     "src/**/*"
   ],
+  
   "exclude": [
     "node_modules"
   ]

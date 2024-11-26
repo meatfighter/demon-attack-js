@@ -1,14 +1,15 @@
 import path from 'path';
+import { fileURLToPath } from 'url';
 
 export default {
     mode: 'production',
     entry: {
-        sw: './src/sw.ts',
+        sw: './src/sw/sw.ts',
     },
     output: {
         filename: '[name].bundle.js',
         chunkFilename: '[name].bundle.js',
-        path: path.resolve(process.cwd(), 'public_html/app'),
+        path: path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'public_html/app'),
     },
     module: {
         rules: [
@@ -21,5 +22,8 @@ export default {
     },
     resolve: {
         extensions: ['.tsx', '.ts', '.js'],
+        alias: {
+            '@': path.resolve(path.dirname(fileURLToPath(import.meta.url)), 'src'),
+        },
     },
 };

@@ -1,5 +1,5 @@
-import { update } from './game-logic';
-import { render } from './game';
+import { update } from './game/game';
+import { render } from './screen';
 
 const FRAMES_PER_SECOND = 60;
 const MILLIS_PER_FRAME = 1000 / FRAMES_PER_SECOND;

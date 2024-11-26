@@ -33,12 +33,12 @@ export const baseSprites: Sprite[] = new Array<Sprite>(121);
 export const bunkerSprites: Sprite[] = new Array<Sprite>(62);
 export const digitSprites: Sprite[] = new Array<Sprite>(10);
 
-export const demonSpriteAndMasks: SpriteAndMask[][][] = new Array<SpriteAndMask[][]>(7); // level, demon, sprite
-export const demonExplosionSprites: Sprite[][][] = new Array<Sprite[][]>(7); // level, (0=explodes, 1=splits), sprite
-export const demonFormsSprites: Sprite[][][] = new Array<Sprite[][]>(7); // level, sprite, (0=left, 1=right)
+export const demonSpriteAndMasks: SpriteAndMask[][][] = new Array<SpriteAndMask[][]>(7); // palette, demon, sprite
+export const demonExplosionSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, (0=explodes, 1=splits), sprite
+export const demonFormsSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, sprite, (0=left, 1=right)
 
-export const splitDemonSpriteAndMasks: SpriteAndMask[][] = new Array<SpriteAndMask[]>(7); // level, sprite
-export const splitDemonExplosionSprites: Sprite[][] = new Array<Sprite[]>(7); // level, sprite
+export const splitDemonSpriteAndMasks: SpriteAndMask[][] = new Array<SpriteAndMask[]>(7); // palette, sprite
+export const splitDemonExplosionSprites: Sprite[][] = new Array<Sprite[]>(7); // palette, sprite
 
 export let cannonSpriteAndMask: SpriteAndMask;
 export const cannonExplosionSprites: Sprite[] = new Array<Sprite>(8);

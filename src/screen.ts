@@ -5,7 +5,7 @@ import { enter as enterStart } from './start';
 import { playSoundEffect } from './sfx';
 import { PhysicalDimensions, Resolution } from './graphics';
 import { startInput, stopInput } from './input';
-import { renderScreen } from './game-logic';
+import { renderScreen } from './game/game';
 
 let mainCanvas: HTMLCanvasElement | null;
 let mainCtx: CanvasRenderingContext2D | null;

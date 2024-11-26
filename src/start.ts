@@ -1,5 +1,5 @@
 import { getVolume, setVolume } from "./sfx";
-import { enter as enterGame } from "./game";
+import { enter as enterGame } from "./screen";
 
 let volume = 0;
 let landscape = false;
