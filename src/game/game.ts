@@ -25,10 +25,6 @@ let gs: GameState;
 function init() {
     gs = new GameState();
     gs.setLevel(20);
-    const { demons } = gs;
-    for (let tier = Tier.BOTTOM; tier >= Tier.TOP; --tier) {
-        demons.push(new Demon(gs));
-    }
 }
 
 function trySpawnDemon() {
@@ -50,27 +46,44 @@ function trySpawnDemon() {
                 break;        
         }
     }
+    let yMin = 56;
+    let yMax = 141;
+    let tier = Tier.NONE;
     if (!bottom) {
-        return;
-    }
-    if (!middle) {
-        return;
-    }
-    if (!top) {
-        const yMin = 56;
-        let yMax = 141;
+        tier = Tier.BOTTOM;
+        yMin += 16;
         for (let i = demons.length - 1; i >= 0; --i) {
-            const demon = demons[i];            
-            yMax = Math.min(yMax, demon.yEaser.getMin() - 1);
+            const demon = demons[i];
+            yMin = Math.max(yMin, demon.yEaser.getMax() + 8);
+        }      
+    } else if (!middle) {
+        tier = Tier.MIDDLE;
+        yMin += 8;
+        yMax -= 8;
+        for (let i = demons.length - 1; i >= 0; --i) {
+            const demon = demons[i];
+            if (demon.tier == Tier.TOP) {
+                yMin = Math.max(yMin, demon.yEaser.getMax() + 8);
+            } else if (demon.tier == Tier.BOTTOM) {
+                yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
+            }
         }
-        if (yMax - yMin + 1 >= 8) {
-            this.y = yMin + (yMax - yMin) * Math.random();
+    } else if (!top) {
+        tier = Tier.TOP;
+        yMax -= 16;
+        for (let i = demons.length - 1; i >= 0; --i) {
+            const demon = demons[i];
+            yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
         }
-        return;
+    }
+    if (tier !== Tier.NONE && yMax - yMin + 1 >= 8) {
+        demons.push(new Demon(Math.floor(144 * Math.random()), yMin + (yMax - yMin) * Math.random(), tier));
     }
 }
 
 export function update() {
+    trySpawnDemon();
+
     const { cannon, cannonBullet, demons } = gs;
     for (let i = demons.length - 1; i >= 0; --i) {
         const demon = demons[i];

@@ -62,6 +62,7 @@ export class Demon {
         const { demons } = gs;
         switch (this.tier) {
             case Tier.TOP:
+                yMax -= 16;
                 for (let i = demons.length - 1; i >= 0; --i) {
                     const demon = demons[i];
                     if (demon === this) {
@@ -86,6 +87,7 @@ export class Demon {
                 }
                 break;
             case Tier.BOTTOM:
+                yMin += 16;
                 for (let i = demons.length - 1; i >= 0; --i) {
                     const demon = demons[i];
                     if (demon === this) {
