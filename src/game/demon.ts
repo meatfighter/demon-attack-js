@@ -2,7 +2,14 @@ import { Easer } from "./easer";
 import { Tier } from "./tier";
 import { gaussianRandom, clamp, bulletIntersects } from '@/math';
 import { GameState } from "./game-state";
-import { demonSpriteAndMasks, demonSpawnSprites, demonExplosionSprites } from '@/graphics';
+import {
+    Sprite,
+    SpriteAndMask, 
+    demonSpriteAndMasks, 
+    demonSpawnSprites, 
+    demonExplosionSprites, 
+    splitDemonSpriteAndMasks, 
+    splitDemonExplosionSprites } from '@/graphics';
 import { CannonBulletState } from "./cannon-bullet";
 
 // demons appear bottom, middle, top around 100, 80, and 60
@@ -23,21 +30,31 @@ export class Demon {
     exploding = false;
     explodingCounter = 0;
 
+    split = false;
+
     constructor(public x: number, public y: number, public tier: Tier) {
     }
 
     update(gs: GameState) {
         if (this.exploding) {
             if (++this.explodingCounter === 24) {
-                const { demons } = gs;
-                for (let i = demons.length - 1; i >= 0; --i) {
-                    if (demons[i] === this) {
-                        demons.splice(i, 1);
-                        break;
+                if (this.split || gs.level < 4) {
+                    const { demons } = gs;
+                    for (let i = demons.length - 1; i >= 0; --i) {
+                        if (demons[i] === this) {
+                            demons.splice(i, 1);
+                            break;
+                        }
                     }
+                    return;
+                } else {
+                    this.split = true;
+                    this.exploding = false;
+                    this.explodingCounter = 0;
                 }
+            } else {
+                return;
             }
-            return;
         }
 
         if (this.spawning > 0) {
@@ -81,7 +98,7 @@ export class Demon {
         } else {
             x1 = gaussianRandom(this.x, 32);
         }
-        x1 = clamp(x1, 20, 123);
+        x1 = clamp(x1, 20, this.split ? 151 : 143);
         this.xEaser.reset(this.x, x1, 2 * Math.abs(x1 - this.x + 1));
     }
 
@@ -136,11 +153,15 @@ export class Demon {
 
     render(gs: GameState, ctx: CanvasRenderingContext2D) {
         if (this.exploding) {
-            const sprite = this.explodingCounter >> 3;
-            if (sprite < 3) {
-                // TODO EXPLODE VS SPLIT
-                ctx.drawImage(demonExplosionSprites[gs.demonPalette][0][sprite], Math.floor(this.x), 
-                        Math.floor(this.y));
+            const spriteIndex = this.explodingCounter >> 3;
+            let sprite: Sprite;
+            if (this.split) {
+                sprite = splitDemonExplosionSprites[gs.demonPalette][spriteIndex];
+            } else {
+                sprite = demonExplosionSprites[gs.demonPalette][gs.level < 4 ? 0 : 1][spriteIndex];
+            }           
+            if (spriteIndex < 3) {
+                ctx.drawImage(sprite, Math.floor(this.x), Math.floor(this.y));
             }
         } else if (this.spawning > 0) {
             if (this.spawning === 1) {
@@ -154,8 +175,13 @@ export class Demon {
                         Math.floor(this.y), 32, 8);
             }
         } else {
-            ctx.drawImage(demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite].sprite, Math.floor(this.x), 
-                    Math.floor(this.y));
+            let spriteAndMask: SpriteAndMask;
+            if (this.split) {
+                spriteAndMask = splitDemonSpriteAndMasks[gs.demonPalette][this.sprite];
+            } else {
+                spriteAndMask = demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite];
+            }
+            ctx.drawImage(spriteAndMask.sprite, Math.floor(this.x), Math.floor(this.y));
         }
     }
 }
