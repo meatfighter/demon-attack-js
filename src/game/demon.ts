@@ -10,9 +10,6 @@ import { demonSpriteAndMasks } from '@/graphics';
 
 export class Demon {
 
-    x = -1;
-    y = -1;
-    tier = Tier.BOTTOM;
     xEaser = new Easer();
     yEaser = new Easer();
     
@@ -20,18 +17,8 @@ export class Demon {
     flap = 0;
     flapCounter = 8;    
 
-    constructor(gs: GameState) {
-        this.tier = Tier.BOTTOM;
-        const { demons } = gs;
-        for (let i = demons.length - 1; i >= 0; --i) {
-            const demon = demons[i];
-            if (demon === this) {
-                continue;
-            }
-            this.tier = Math.min(this.tier, demon.tier - 1);
-        }
+    constructor(public x: number, public y: number, public tier: Tier) {
         
-        this.resetYEaser(gs);
     }
 
     update(gs: GameState) {
@@ -53,10 +40,6 @@ export class Demon {
     }
 
     private resetXEaser(gs: GameState) {
-        if (this.x === -1) {
-            this.x = Math.floor(144 * Math.random());
-        }
-
         let x1: number;
         if (this.tier === Tier.BOTTOM) {
             const { cannon } = gs;
@@ -115,10 +98,6 @@ export class Demon {
 
         yMin = Math.min(yMin, yMax);
         yMax = Math.max(yMin, yMax);
-
-        if (this.y === -1) {
-            this.y = yMin + (yMax - yMin) * Math.random();
-        }
 
         this.yEaser.reset(this.y, yMin + (yMax - yMin) * Math.random(), yMax - yMin + 1);
     }

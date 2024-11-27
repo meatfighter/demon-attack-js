@@ -57,14 +57,14 @@ function trySpawnDemon() {
         return;
     }
     if (!top) {
-        const minY = 56;
-        let maxY = 141;
+        const yMin = 56;
+        let yMax = 141;
         for (let i = demons.length - 1; i >= 0; --i) {
             const demon = demons[i];            
-            maxY = Math.min(maxY, demon.yEaser.getMin() - 1);
+            yMax = Math.min(yMax, demon.yEaser.getMin() - 1);
         }
-        if (maxY - minY + 1 >= 8) {
-
+        if (yMax - yMin + 1 >= 8) {
+            this.y = yMin + (yMax - yMin) * Math.random();
         }
         return;
     }
