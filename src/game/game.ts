@@ -5,7 +5,7 @@ import {
     digitSprites, 
     demonSpriteAndMasks, 
     demonExplosionSprites, 
-    demonFormsSprites, 
+    demonSpawnSprites, 
     splitDemonSpriteAndMasks, 
     splitDemonExplosionSprites,
     cannonSpriteAndMask, 
@@ -24,7 +24,7 @@ let gs: GameState;
 
 function init() {
     gs = new GameState();
-    gs.setLevel(20);
+    gs.setLevel(0);
 }
 
 function trySpawnDemon() {
@@ -34,6 +34,9 @@ function trySpawnDemon() {
     let bottom = false;
     for (let i = demons.length - 1; i >= 0; --i) {
         const demon = demons[i];
+        if (demon.spawning > 0) {
+            return;
+        }
         switch (demon.tier) {
             case Tier.TOP:
                 top = true;
@@ -46,6 +49,12 @@ function trySpawnDemon() {
                 break;        
         }
     }
+
+    if (gs.spawnDelay > 0) {
+        --gs.spawnDelay;
+        return;
+    }
+
     let yMin = 56;
     let yMax = 141;
     let tier = Tier.NONE;
@@ -77,7 +86,8 @@ function trySpawnDemon() {
         }
     }
     if (tier !== Tier.NONE && yMax - yMin + 1 >= 8) {
-        demons.push(new Demon(Math.floor(144 * Math.random()), yMin + (yMax - yMin) * Math.random(), tier));
+        demons.push(new Demon(Math.floor(20 + 103 * Math.random()), yMin + (yMax - yMin) * Math.random(), tier));
+        gs.spawnDelay = 8 + Math.floor(24 * Math.random());
     }
 }
 

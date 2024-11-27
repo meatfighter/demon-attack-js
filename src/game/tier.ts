@@ -4,3 +4,4 @@ export enum Tier {
     MIDDLE = 1,
     BOTTOM = 2,
     DIVING = 3,
+}

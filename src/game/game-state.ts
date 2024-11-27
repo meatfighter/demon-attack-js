@@ -17,6 +17,7 @@ export class GameState {
     cannonBullet = new CannonBullet();
     cannonFiringSpeed = 0;
     demons = new Array<Demon>();
+    spawnDelay = 30;
 
     setLevel(level: number) {
         this.level = level;

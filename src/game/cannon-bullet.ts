@@ -2,7 +2,7 @@ import { GameState } from './game-state';
 import { colors } from '@/graphics';
 import { isFirePressed } from '@/input';
 
-enum State {
+export enum CannonBulletState {
     LOADED,
     FIRING,        
 }
@@ -11,21 +11,25 @@ const color = colors[0x6e];
 
 export class CannonBullet {
 
-    state = State.LOADED;
+    state = CannonBulletState.LOADED;
     x = 0;
     y = 0;
 
+    load() {
+        this.state = CannonBulletState.LOADED;
+    }
+
     update(gs: GameState) {
-        if (this.state === State.LOADED) {
+        if (this.state === CannonBulletState.LOADED) {
             this.x = gs.cannon.x + 3;
             this.y = 186;
             if (isFirePressed()) {
-                this.state = State.FIRING;
+                this.state = CannonBulletState.FIRING;
                 this.y -= gs.cannonFiringSpeed;
             }
         } else {            
             if (this.y < 32) {
-                this.state = State.LOADED;
+                this.state = CannonBulletState.LOADED;
                 this.x = gs.cannon.x + 3;
                 this.y = 186;              
             } else {

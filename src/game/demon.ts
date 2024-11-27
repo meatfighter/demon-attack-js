@@ -1,8 +1,9 @@
 import { Easer } from "./easer";
 import { Tier } from "./tier";
-import { gaussianRandom, clamp } from '@/math';
+import { gaussianRandom, clamp, bulletIntersects } from '@/math';
 import { GameState } from "./game-state";
-import { demonSpriteAndMasks } from '@/graphics';
+import { demonSpriteAndMasks, demonSpawnSprites, demonExplosionSprites } from '@/graphics';
+import { CannonBulletState } from "./cannon-bullet";
 
 // demons appear bottom, middle, top around 100, 80, and 60
 // demons move between 56 and 141, exact bands vary randomly
@@ -15,13 +16,42 @@ export class Demon {
     
     sprite = 0;
     flap = 0;
-    flapCounter = 8;    
+    flapCounter = 8;
+
+    spawning = 28;
+
+    exploding = false;
+    explodingCounter = 0;
 
     constructor(public x: number, public y: number, public tier: Tier) {
-        
     }
 
     update(gs: GameState) {
+        if (this.exploding) {
+            if (++this.explodingCounter === 24) {
+                const { demons } = gs;
+                for (let i = demons.length - 1; i >= 0; --i) {
+                    if (demons[i] === this) {
+                        demons.splice(i, 1);
+                        break;
+                    }
+                }
+            }
+            return;
+        }
+
+        if (this.spawning > 0) {
+            --this.spawning;
+        } else {
+            const { cannonBullet } = gs;
+            if (cannonBullet.state === CannonBulletState.FIRING && bulletIntersects(cannonBullet.x, cannonBullet.y, 8, 
+                    demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite].mask, this.x, this.y)) {
+                cannonBullet.load();
+                this.exploding = true;
+                this.explodingCounter = Math.floor(5 * Math.random());
+            }
+        }
+
         if (--this.flapCounter === 0) {
             this.flapCounter = 8;
             this.flap = (this.flap + 1) & 3;
@@ -51,7 +81,7 @@ export class Demon {
         } else {
             x1 = gaussianRandom(this.x, 32);
         }
-        x1 = clamp(x1, 0, 143);
+        x1 = clamp(x1, 20, 123);
         this.xEaser.reset(this.x, x1, 2 * Math.abs(x1 - this.x + 1));
     }
 
@@ -105,7 +135,27 @@ export class Demon {
     }
 
     render(gs: GameState, ctx: CanvasRenderingContext2D) {
-        ctx.drawImage(demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite].sprite, Math.floor(this.x), 
-                Math.floor(this.y));
+        if (this.exploding) {
+            const sprite = this.explodingCounter >> 3;
+            if (sprite < 3) {
+                // TODO EXPLODE VS SPLIT
+                ctx.drawImage(demonExplosionSprites[gs.demonPalette][0][sprite], Math.floor(this.x), 
+                        Math.floor(this.y));
+            }
+        } else if (this.spawning > 0) {
+            if (this.spawning === 1) {
+                ctx.drawImage(demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite].sprite, 
+                        Math.floor(this.x), Math.floor(this.y), 32, 8);
+            } else {
+                const offset = (this.spawning - 1) << 2;
+                ctx.drawImage(demonSpawnSprites[gs.demonPalette][this.sprite][0], Math.floor(this.x - offset), 
+                        Math.floor(this.y), 32, 8);
+                ctx.drawImage(demonSpawnSprites[gs.demonPalette][this.sprite][1], Math.floor(this.x + offset), 
+                        Math.floor(this.y), 32, 8);
+            }
+        } else {
+            ctx.drawImage(demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite].sprite, Math.floor(this.x), 
+                    Math.floor(this.y));
+        }
     }
 }

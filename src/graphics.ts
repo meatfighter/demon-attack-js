@@ -35,7 +35,7 @@ export const digitSprites: Sprite[] = new Array<Sprite>(10);
 
 export const demonSpriteAndMasks: SpriteAndMask[][][] = new Array<SpriteAndMask[][]>(7); // palette, demon, sprite
 export const demonExplosionSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, (0=explodes, 1=splits), sprite
-export const demonFormsSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, sprite, (0=left, 1=right)
+export const demonSpawnSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, sprite, (0=left, 1=right)
 
 export const splitDemonSpriteAndMasks: SpriteAndMask[][] = new Array<SpriteAndMask[]>(7); // palette, sprite
 export const splitDemonExplosionSprites: Sprite[][] = new Array<Sprite[]>(7); // palette, sprite
@@ -216,15 +216,15 @@ function extractSprites() {
         }
     }
 
-    // demon forms
+    // demon spawns
     for (let level = 0; level < 7; ++level) {
         const colOffset = Offsets.DEMON_COLS + (level << 3);
-        demonFormsSprites[level] = new Array<Sprite[]>(3);
+        demonSpawnSprites[level] = new Array<Sprite[]>(3);
         for (let sprite = 0; sprite < 3; ++sprite) {
             const spriteOffset = Offsets.DEMON_EXPLODES_GFX + (sprite << 3);
-            demonFormsSprites[level][sprite] = new Array<Sprite>(2);
+            demonSpawnSprites[level][sprite] = new Array<Sprite>(2);
             for (let right = 0; right < 2; ++right) {
-                demonFormsSprites[level][sprite][right] = createSprite(8, 8, imageData => {
+                demonSpawnSprites[level][sprite][right] = createSprite(8, 8, imageData => {
                     for (let y = 0; y < 8; ++y) {
                         const col = palette[binStr.charCodeAt(colOffset + y)];
                         const byte = binStr.charCodeAt(spriteOffset + y);
