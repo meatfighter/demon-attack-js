@@ -1,6 +1,6 @@
 import { cannonSpriteAndMask } from "@/graphics";
 import { isLeftPressed, isRightPressed, isFirePressed } from "@/input";
-import { state } from "./state";
+import { GameState } from "./game-state";
 
 const CANNON_START_X = 87;
 const CANNON_MIN_X = 25;
@@ -11,7 +11,7 @@ export class Cannon {
 
     x = CANNON_START_X;
 
-    update() {
+    update(gs: GameState) {
 
         if (isLeftPressed()) {
             if (this.x > CANNON_MIN_X) {
@@ -24,7 +24,7 @@ export class Cannon {
         }
     }
 
-    render(ctx: CanvasRenderingContext2D) {
+    render(gs: GameState, ctx: CanvasRenderingContext2D) {
         ctx.drawImage(cannonSpriteAndMask.sprite, this.x, CANNON_Y);
     }
 }
