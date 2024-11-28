@@ -18,11 +18,27 @@ export class GameState {
     cannonFiringSpeed = 0;
     demons = new Array<Demon>();
     spawnDelay = 30;
+    divingDemon: Demon | null = null;
 
     setLevel(level: number) {
         this.level = level;
         this.demonPalette = level % 7;
         this.demonType = (level >> 1) % 6;
         this.cannonFiringSpeed = CANNON_FIRING_SPEEDS[Math.min(8, level)];
+    }
+
+    removeDemon(demon: Demon) {
+        if (this.divingDemon == demon) {
+            this.divingDemon = null;
+        }
+        if (demon.partner) {
+            demon.partner.partner = null;
+        }
+        for (let i = this.demons.length - 1; i >= 0; --i) {
+            if (this.demons[i] === demon) {
+                this.demons.splice(i, 1);
+                return;
+            }
+        }
     }
 }

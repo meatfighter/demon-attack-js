@@ -12,10 +12,6 @@ import {
     splitDemonExplosionSprites } from '@/graphics';
 import { CannonBulletState } from "./cannon-bullet";
 
-// demons appear bottom, middle, top around 100, 80, and 60
-// demons move between 56 and 141, exact bands vary randomly
-// must leave enough gap for demons to form
-
 export class Demon {
 
     xEaser = new Easer();
@@ -31,6 +27,9 @@ export class Demon {
     explodingCounter = 0;
 
     split = false;
+    leftHalf = false;
+    partner: Demon | null = null;
+    movingLeft = false;
 
     constructor(public x: number, public y: number, public tier: Tier) {
     }
@@ -39,18 +38,25 @@ export class Demon {
         if (this.exploding) {
             if (++this.explodingCounter === 24) {
                 if (this.split || gs.level < 4) {
-                    const { demons } = gs;
-                    for (let i = demons.length - 1; i >= 0; --i) {
-                        if (demons[i] === this) {
-                            demons.splice(i, 1);
-                            break;
-                        }
-                    }
+                    gs.removeDemon(this);                                        
                     return;
                 } else {
-                    this.split = true;
                     this.exploding = false;
                     this.explodingCounter = 0;
+
+                    this.split = true;
+                    this.leftHalf = true;
+
+                    this.partner = new Demon(this.x + 8, this.y, this.tier);
+                    this.partner.sprite = this.sprite;
+                    this.partner.flap = this.flap;
+                    this.partner.flapCounter = this.flapCounter;
+                    this.partner.spawning = 0;
+                    this.partner.split = true;
+                    this.partner.partner = this;
+                    this.partner.yEaser = this.yEaser;
+
+                    gs.demons.push(this.partner);
                 }
             } else {
                 return;
@@ -75,18 +81,82 @@ export class Demon {
             this.sprite = (this.flap === 3) ? 1: this.flap;
         }
 
-        if (this.xEaser.update()) {
-            this.resetXEaser(gs);
-        }
-        this.x = this.xEaser.v;
+        if (this.tier === Tier.DIVING) {
+            if (this.xEaser.update()) {
+                this.resetXEaserForDive(gs);
+            }
+            this.x = this.xEaser.v;
 
-        if (this.yEaser.update()) {
-            this.resetYEaser(gs);
+            if (this.yEaser.update()) {
+                this.resetYEaserForDive(gs);
+            }
+            this.y = this.yEaser.v;
+
+            if (this.y >= 188) {
+                gs.removeDemon(this);
+            }
+        } else {
+            if (this.split && !this.leftHalf) {
+                if (this.movingLeft) {
+                    this.x -= 0.75;
+                    if (this.x <= 20) {
+                        this.movingLeft = false;
+                    }
+                } else {
+                    this.x += 0.75;
+                    if (this.x >= 151) {
+                        this.movingLeft = true;
+                    }
+                }
+            } else {
+                if (this.xEaser.update()) {
+                    this.resetXEaserRandomly(gs);
+                }
+                this.x = this.xEaser.v;
+            }
+
+            if (!this.split || this.leftHalf || !this.partner) {
+                if (this.yEaser.update()) {
+                    if (this.split && !this.partner && !gs.divingDemon && this.tier === Tier.BOTTOM) {
+                        this.startDiving(gs);
+                    } else {
+                        this.resetYEaserRandomly(gs);
+                    }
+                }
+            }
+            this.y = this.yEaser.v;
         }
-        this.y = this.yEaser.v;
     }
 
-    private resetXEaser(gs: GameState) {
+    private startDiving(gs: GameState) {
+        this.tier = Tier.DIVING;
+        const { demons } = gs;
+        for (let i = demons.length - 1; i >= 0; --i) {
+            const demon = demons[i];
+            if (demon === this) {
+                continue;
+            }
+            demon.tier = Math.min(Tier.BOTTOM, demon.tier + 1);
+        }
+        gs.divingDemon = this;
+        this.yEaser.v1 = this.yEaser.v0 - 1;
+        this.resetXEaserForDive(gs);
+        this.resetYEaserForDive(gs);
+    }
+
+    private resetXEaserForDive(gs: GameState) {
+        this.xEaser.reset(this.x, clamp((this.x < gs.cannon.x) ? this.x + 20 : this.x - 20, 20, 151), 32);
+    }
+
+    private resetYEaserForDive(gs: GameState) {
+        if (this.yEaser.v1 < this.yEaser.v0) {
+            this.yEaser.reset(this.y, this.y + 20, 16);
+        } else {
+            this.yEaser.reset(this.y, this.y - 12, 16);
+        }
+    }
+
+    private resetXEaserRandomly(gs: GameState) {
         let x1: number;
         if (this.tier === Tier.BOTTOM) {
             const { cannon } = gs;
@@ -102,7 +172,7 @@ export class Demon {
         this.xEaser.reset(this.x, x1, 2 * Math.abs(x1 - this.x + 1));
     }
 
-    private resetYEaser(gs: GameState) {
+    private resetYEaserRandomly(gs: GameState) {
         let yMin = 56;
         let yMax = 141;
         
@@ -115,7 +185,9 @@ export class Demon {
                     if (demon === this) {
                         continue;
                     }
-                    yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
+                    if (demon.tier > Tier.TOP) {
+                        yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
+                    }
                 }
                 break;
             case Tier.MIDDLE:
@@ -126,9 +198,9 @@ export class Demon {
                     if (demon === this) {
                         continue;
                     }
-                    if (demon.tier == Tier.TOP) {
+                    if (demon.tier < Tier.MIDDLE) {
                         yMin = Math.max(yMin, demon.yEaser.getMax() + 8);
-                    } else if (demon.tier == Tier.BOTTOM) {
+                    } else if (demon.tier > Tier.MIDDLE) {
                         yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
                     }
                 }
@@ -140,7 +212,11 @@ export class Demon {
                     if (demon === this) {
                         continue;
                     }
-                    yMin = Math.max(yMin, demon.yEaser.getMax() + 8);
+                    if (demon.tier < Tier.BOTTOM) {
+                        yMin = Math.max(yMin, demon.yEaser.getMax() + 8);
+                    } else if (demon.tier > Tier.BOTTOM) {
+                        yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
+                    }
                 }
                 break;
         }

@@ -55,17 +55,21 @@ function trySpawnDemon() {
         yMin += 16;
         for (let i = demons.length - 1; i >= 0; --i) {
             const demon = demons[i];
-            yMin = Math.max(yMin, demon.yEaser.getMax() + 8);
-        }      
+            if (demon.tier < Tier.BOTTOM) {
+                yMin = Math.max(yMin, demon.yEaser.getMax() + 8);
+            } else if (demon.tier > Tier.BOTTOM) {
+                yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
+            }
+        }
     } else if (!middle) {
         tier = Tier.MIDDLE;
         yMin += 8;
         yMax -= 8;
         for (let i = demons.length - 1; i >= 0; --i) {
             const demon = demons[i];
-            if (demon.tier == Tier.TOP) {
+            if (demon.tier < Tier.MIDDLE) {
                 yMin = Math.max(yMin, demon.yEaser.getMax() + 8);
-            } else if (demon.tier == Tier.BOTTOM) {
+            } else if (demon.tier > Tier.MIDDLE) {
                 yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
             }
         }
@@ -74,7 +78,9 @@ function trySpawnDemon() {
         yMax -= 16;
         for (let i = demons.length - 1; i >= 0; --i) {
             const demon = demons[i];
-            yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
+            if (demon.tier > Tier.TOP) {
+                yMax = Math.min(yMax, demon.yEaser.getMin() - 8);
+            }
         }
     }
     if (tier !== Tier.NONE && yMax - yMin + 1 >= 8) {
