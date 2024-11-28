@@ -8,15 +8,11 @@ import { Tier } from './tier';
 import { Demon } from './demon';
 import { GameState } from './game-state';
 
-// demons appear bottom, middle, top around 100, 80, and 60
-// demons move between 56 and 141, exact bands vary randomly
-// must leave enough gap for demons to form
-
 let gs: GameState;
 
 function init() {
     gs = new GameState();
-    gs.setLevel(4);
+    gs.setLevel(0);
 }
 
 function trySpawnDemon() {

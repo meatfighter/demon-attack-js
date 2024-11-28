@@ -1,8 +1,10 @@
 import { Demon } from './demon';
 import { Cannon } from './cannon';
 import { CannonBullet } from './cannon-bullet';
+import { DemonBullet } from './demon-bullet';
 
 const CANNON_FIRING_SPEEDS = [ 3, 3, 4, 4, 5, 5, 5, 5, 6 ];
+const DEMON_FIRING_SPEEDS = [ 8, 6, 6, 3, 5, 4 ];
 
 export class GameState {
     level = 0;
@@ -19,6 +21,7 @@ export class GameState {
     demons = new Array<Demon>();
     spawnDelay = 30;
     divingDemon: Demon | null = null;
+    demonBullets = new Array<DemonBullet>();
 
     setLevel(level: number) {
         this.level = level;

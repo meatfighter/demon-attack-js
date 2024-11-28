@@ -36,6 +36,7 @@ export const digitSprites: Sprite[] = new Array<Sprite>(10);
 export const demonSpriteAndMasks: SpriteAndMask[][][] = new Array<SpriteAndMask[][]>(7); // palette, demon, sprite
 export const demonExplosionSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, (0=explodes, 1=splits), sprite
 export const demonSpawnSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, sprite, (0=left, 1=right)
+export const demonShots: number[][] = new Array<number[]>(16); // shot, (0=left, 1=right)
 
 export const splitDemonSpriteAndMasks: SpriteAndMask[][] = new Array<SpriteAndMask[]>(7); // palette, sprite
 export const splitDemonExplosionSprites: Sprite[][] = new Array<Sprite[]>(7); // palette, sprite
@@ -110,7 +111,7 @@ function extractSprites() {
         DEMON_SPLITS_GFX = 287,
         SPLIT_DEMON_GFX = 311,
         DIGITS_GFX = 335,
-        DEMON_SHOT = 435,
+        DEMON_SHOTS = 435,
     }
 
     const palette = extractPalette();
@@ -235,6 +236,17 @@ function extractSprites() {
                         }
                     }
                 });
+            }
+        }
+    }
+
+    // demon shots
+    for (let shot = 0; shot < 16; ++shot) {
+        demonShots[shot] = [];
+        const byte = binStr.charCodeAt(Offsets.DEMON_SHOTS + shot);
+        for (let x = 0, mask = 0x80; x < 8; ++x, mask >>= 1) {
+            if ((byte & mask) !== 0) {
+                demonShots[shot].push(x);
             }
         }
     }
