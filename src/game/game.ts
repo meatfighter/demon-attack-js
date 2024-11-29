@@ -12,7 +12,7 @@ let gs: GameState;
 
 function init() {
     gs = new GameState();
-    gs.setLevel(0);
+    gs.setLevel(4); // TODO
 }
 
 function trySpawnDemon() {
@@ -88,12 +88,23 @@ function trySpawnDemon() {
 export function update() {
     trySpawnDemon();
 
-    const { cannon, cannonBullet, demons } = gs;
+    const { cannon, cannonBullet, demons, demonBullets } = gs;
+    
+    cannon.update(gs);
+
+    if (gs.demonBulletDropTimer === 0) {
+        gs.demonBulletDropTimer = gs.demonBulletDropTimerReset;
+    }
+    --gs.demonBulletDropTimer;    
+    for (let i = demonBullets.length - 1; i >= 0; --i) {
+        demonBullets[i].update(gs);
+    }
+
     for (let i = demons.length - 1; i >= 0; --i) {
         const demon = demons[i];
         demon.update(gs);
     }
-    cannon.update(gs);
+
     cannonBullet.update(gs);
 }
 
@@ -121,13 +132,22 @@ export function renderScreen(ctx: CanvasRenderingContext2D) {
         }
     }
 
-    // demons and cannon
-    const { cannon, cannonBullet, demons } = gs;
-    for (let i = demons.length - 1; i >= 0; --i) {
-        const demon = demons[i];
-        demon.render(gs, ctx);
-    }
+    const { cannon, cannonBullet, demons, demonBullets } = gs;
+
+    // cannon
     cannon.render(gs, ctx);
+
+    // demon bullets
+    for (let i = demonBullets.length - 1; i >= 0; --i) {
+        demonBullets[i].render(gs, ctx);
+    }
+
+    // demons
+    for (let i = demons.length - 1; i >= 0; --i) {
+        demons[i].render(gs, ctx);
+    }
+
+    // cannon bullet
     cannonBullet.render(gs, ctx);
 }
 

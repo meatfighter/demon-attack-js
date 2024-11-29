@@ -11,6 +11,7 @@ import {
     splitDemonSpriteAndMasks, 
     splitDemonExplosionSprites } from '@/graphics';
 import { CannonBulletState } from "./cannon-bullet";
+import { createDemonBulletBatch } from './demon-bullet';
 
 export class Demon {
 
@@ -35,43 +36,53 @@ export class Demon {
     }
 
     update(gs: GameState) {
-        if (this.exploding) {
-            if (++this.explodingCounter === 24) {
-                if (this.split || gs.level < 4) {
-                    gs.removeDemon(this);                                        
-                    return;
-                } else {
-                    this.exploding = false;
-                    this.explodingCounter = 0;
-
-                    this.split = true;
-                    this.leftHalf = true;
-
-                    this.partner = new Demon(this.x + 8, this.y, this.tier);
-                    this.partner.sprite = this.sprite;
-                    this.partner.flap = this.flap;
-                    this.partner.flapCounter = this.flapCounter;
-                    this.partner.spawning = 0;
-                    this.partner.split = true;
-                    this.partner.partner = this;
-                    this.partner.yEaser = this.yEaser;
-
-                    gs.demons.push(this.partner);
-                }
-            } else {
+        if (this.exploding && ++this.explodingCounter === 24) {
+            if (this.split || gs.level < 4) {
+                gs.removeDemon(this);
                 return;
+            } else {
+                this.exploding = false;
+                this.explodingCounter = 0;
+
+                this.split = true;
+                this.leftHalf = true;
+
+                this.partner = new Demon(this.x + 8, this.y, this.tier);
+                this.partner.sprite = this.sprite;
+                this.partner.flap = this.flap;
+                this.partner.flapCounter = this.flapCounter;
+                this.partner.spawning = 0;
+                this.partner.split = true;
+                this.partner.partner = this;
+                this.partner.yEaser = this.yEaser;
+
+                gs.demons.push(this.partner);
             }
         }
 
         if (this.spawning > 0) {
             --this.spawning;
-        } else {
+        } else if (!this.exploding) {
             const { cannonBullet } = gs;
             if (cannonBullet.state === CannonBulletState.FIRING && bulletIntersects(cannonBullet.x, cannonBullet.y, 8, 
                     demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite].mask, this.x, this.y)) {
                 cannonBullet.load();
                 this.exploding = true;
                 this.explodingCounter = Math.floor(5 * Math.random());
+                let points = 5 * (Math.min(5, gs.level >> 1) + 2);
+                if (this.split) {                    
+                    points *= (this.tier === Tier.DIVING) ? 3 : 2;
+                }
+                gs.score += points;
+                if (this.tier === Tier.BOTTOM && (!this.split || this.leftHalf)) {
+                    const { demonBullets } = gs;
+                    const yMin = this.y + 12;
+                    for (let i = demonBullets.length - 1; i >= 0; --i) {
+                        if (demonBullets[i].y < yMin) {
+                            demonBullets.splice(i, 1);
+                        }
+                    }
+                }
             }
         }
 
@@ -110,7 +121,16 @@ export class Demon {
                 }
             } else {
                 if (this.xEaser.update()) {
-                    this.resetXEaserRandomly(gs);
+                    if (this.tier === Tier.BOTTOM && !this.exploding && this.spawning === 0 
+                            && (!this.split || this.leftHalf) && !gs.divingDemon && gs.demonBulletEmitTimer === 0) {
+                        if (gs.demonBullets.length === 0) {
+                            createDemonBulletBatch(gs, this);
+                        } else if (gs.demonBullets[gs.demonBullets.length - 1].y >= this.y + 8) {
+                            this.resetXEaserRandomly(gs);
+                        }
+                    } else {
+                        this.resetXEaserRandomly(gs);
+                    }
                 }
                 this.x = this.xEaser.v;
             }

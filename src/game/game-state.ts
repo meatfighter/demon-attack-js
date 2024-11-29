@@ -21,13 +21,18 @@ export class GameState {
     demons = new Array<Demon>();
     spawnDelay = 30;
     divingDemon: Demon | null = null;
+
     demonBullets = new Array<DemonBullet>();
+    demonBulletEmitTimer = 0;
+    demonBulletDropTimer = 0;
+    demonBulletDropTimerReset = 0;
 
     setLevel(level: number) {
         this.level = level;
         this.demonPalette = level % 7;
         this.demonType = (level >> 1) % 6;
         this.cannonFiringSpeed = CANNON_FIRING_SPEEDS[Math.min(8, level)];
+        this.demonBulletDropTimerReset = DEMON_FIRING_SPEEDS[(level < 4) ? level : (level & 1) + 4];
     }
 
     removeDemon(demon: Demon) {
