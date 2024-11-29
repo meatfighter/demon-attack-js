@@ -23,7 +23,7 @@ export class CannonBullet {
         if (this.state === CannonBulletState.LOADED) {
             this.x = gs.cannon.x + 3;
             this.y = 186;
-            if (isFirePressed()) {
+            if (!gs.cannon.exploding && isFirePressed()) {
                 this.state = CannonBulletState.FIRING;
                 this.y -= gs.cannonFiringSpeed;
             }
@@ -39,6 +39,9 @@ export class CannonBullet {
     }
 
     render(gs: GameState, ctx: CanvasRenderingContext2D) {
+        if (this.state === CannonBulletState.LOADED && gs.cannon.exploding) {
+            return;
+        }
         const endY = this.y + 7;
         if (endY < 32) {
             return;

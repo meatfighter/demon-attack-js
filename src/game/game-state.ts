@@ -23,7 +23,6 @@ export class GameState {
     divingDemon: Demon | null = null;
 
     demonBullets = new Array<DemonBullet>();
-    demonBulletEmitTimer = 0;
     demonBulletDropTimer = 0;
     demonBulletDropTimerReset = 0;
 

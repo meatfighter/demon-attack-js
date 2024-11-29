@@ -76,9 +76,8 @@ export class Demon {
                 gs.score += points;
                 if (this.tier === Tier.BOTTOM && (!this.split || this.leftHalf)) {
                     const { demonBullets } = gs;
-                    const yMin = this.y + 12;
                     for (let i = demonBullets.length - 1; i >= 0; --i) {
-                        if (demonBullets[i].y < yMin) {
+                        if (demonBullets[i].y < this.y) {
                             demonBullets.splice(i, 1);
                         }
                     }
@@ -122,10 +121,11 @@ export class Demon {
             } else {
                 if (this.xEaser.update()) {
                     if (this.tier === Tier.BOTTOM && !this.exploding && this.spawning === 0 
-                            && (!this.split || this.leftHalf) && !gs.divingDemon && gs.demonBulletEmitTimer === 0) {
-                        if (gs.demonBullets.length === 0) {
+                            && (!this.split || this.leftHalf) && !gs.divingDemon) {
+                        if (gs.demonBullets.length === 0 && !gs.cannon.exploding) {
                             createDemonBulletBatch(gs, this);
-                        } else if (gs.demonBullets[gs.demonBullets.length - 1].y >= this.y + 8) {
+                        } else if (gs.cannon.exploding || (gs.demonBullets.length > 0 
+                                && gs.demonBullets[gs.demonBullets.length - 1].y >= this.y + 8)) {
                             this.resetXEaserRandomly(gs);
                         }
                     } else {
@@ -179,16 +179,23 @@ export class Demon {
     private resetXEaserRandomly(gs: GameState) {
         let x1: number;
         if (this.tier === Tier.BOTTOM) {
-            const { cannon } = gs;
+            const { cannon, cannonBullet } = gs;
             if (this.x + 4 < cannon.x) {
-                x1 = gaussianRandom(cannon.x - 20, 2);
+                x1 = gaussianRandom(cannon.x - ((cannonBullet.y + 8 < this.y) ? 10 : 16), 2);
             } else {
-                x1 = gaussianRandom(cannon.x + 11, 2);
+                x1 = gaussianRandom(cannon.x + ((cannonBullet.y + 8 < this.y) ? 3 : 9), 2);
             }
         } else {
             x1 = gaussianRandom(this.x, 32);
         }
         x1 = clamp(x1, 20, this.split ? 151 : 143);
+        if (this.tier === Tier.BOTTOM) {
+            if (x1 > this.x) {
+                x1 = this.x + Math.min(50, x1 - this.x);
+            } else {
+                x1 = this.x - Math.min(50, this.x - x1);
+            }
+        }
         this.xEaser.reset(this.x, x1, 2 * Math.abs(x1 - this.x + 1));
     }
 

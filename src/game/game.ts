@@ -12,7 +12,7 @@ let gs: GameState;
 
 function init() {
     gs = new GameState();
-    gs.setLevel(4); // TODO
+    gs.setLevel(20); // TODO
 }
 
 function trySpawnDemon() {
@@ -96,7 +96,7 @@ export function update() {
         gs.demonBulletDropTimer = gs.demonBulletDropTimerReset;
     }
     --gs.demonBulletDropTimer;    
-    for (let i = demonBullets.length - 1; i >= 0; --i) {
+    for (let i = 0; i < demonBullets.length; ++i) {
         demonBullets[i].update(gs);
     }
 
