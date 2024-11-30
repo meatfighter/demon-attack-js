@@ -34,6 +34,11 @@ export class Cannon {
                 this.exploding = false;
                 this.explodingCounter = 0;
                 this.x = CANNON_START_X;
+                if (gs.bunkers === 0) {
+                    gs.animatingGameOver = true;
+                } else {
+                    --gs.bunkers;
+                }
             }
         } else if (isLeftPressed()) {
             if (this.x > CANNON_MIN_X) {

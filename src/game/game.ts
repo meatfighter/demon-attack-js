@@ -9,17 +9,15 @@ import { Demon } from './demon';
 import { GameState } from './game-state';
 
 // TODO
-// - GAME OVER
 // - PAUSE REGION
-// - IMPROVE MIN DISTANCE OF SHOOTER DEMON
-// - PROMOTE LAST SPLIT DEMON
-// - FAST CANNON BULLET MISSING TARGETS!
+// - BULLET DISTRIBUTIONS
+// - LEVEL DIFFICULTY?
 
 let gs: GameState;
 
 function init() {
     gs = new GameState();
-    gs.setLevel(10); // TODO
+    gs.setLevel(12); // TODO
 }
 
 function trySpawnDemon() {
@@ -96,10 +94,16 @@ function trySpawnDemon() {
 export function update() {
     const { cannon, cannonBullet, demons, demonBullets } = gs;
 
+    if (gs.animatingGameOver) {
+        if (gs.baseColor < baseSprites.length - 1) {
+            ++gs.baseColor;
+        }
+        return;
+    }
+
     if (gs.spawnedDemons === 8 && demons.length === 0 && demonBullets.length === 0 && !cannon.exploding) {        
         gs.setLevel(gs.level + 1);
         if (cannon.exploded || gs.bunkers === 6) {            
-            ++gs.level;
             cannon.reset();
             cannonBullet.load();            
         } else {
@@ -124,6 +128,9 @@ export function update() {
     }
    
     cannon.update(gs);
+    if (gs.animatingGameOver) {
+        return;
+    }
 
     if (gs.demonBulletDropTimer === 0) {
         gs.demonBulletDropTimer = gs.demonBulletDropTimerReset;
@@ -186,6 +193,13 @@ export function renderScreen(ctx: CanvasRenderingContext2D) {
     }
 
     const { cannon, cannonBullet, demons, demonBullets } = gs;
+
+    if (gs.animatingGameOver) {
+        if (gs.baseColor === baseSprites.length - 1) {
+            cannon.render(gs, ctx);
+        }
+        return;    
+    }
 
     // cannon
     cannon.render(gs, ctx);

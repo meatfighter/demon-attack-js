@@ -1,3 +1,5 @@
+import { Mask } from './graphics';
+
 export function gaussianRandom(mean: number, stdDev: number): number {
     let u: number;
     let v: number;
@@ -16,7 +18,7 @@ export function clamp(value: number, min: number, max: number) {
 
 export function bulletIntersects(
         bulletX: number, bulletY: number, bulletHeight: number,
-        mask: boolean[][], maskX: number, maskY: number): boolean {
+        mask: Mask, maskX: number, maskY: number): boolean {
 
     maskX = Math.floor(maskX);
     maskY = Math.floor(maskY);                    
@@ -42,8 +44,8 @@ export function bulletIntersects(
 }
 
 export function spritesIntersect(
-        mask0: boolean[][], x0: number, y0: number,
-        mask1: boolean[][], x1: number, y1: number): boolean {
+        mask0: Mask, x0: number, y0: number,
+        mask1: Mask, x1: number, y1: number): boolean {
 
     x0 = Math.floor(x0);
     y0 = Math.floor(y0);        

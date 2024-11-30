@@ -26,6 +26,7 @@ export class GameState {
     demonBulletDropTimer = 0;
     demonBulletDropTimerReset = 0;
     animatingExtraBunker = false;
+    animatingGameOver = false;
 
     setLevel(level: number) {
         this.level = level;

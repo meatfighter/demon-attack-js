@@ -4,7 +4,6 @@ import { gaussianRandom, clamp, bulletIntersects, spritesIntersect } from '@/mat
 import { GameState } from './game-state';
 import {
     Sprite,
-    Mask,
     demonSprites,
     demonMasks, 
     demonSpawnSprites, 
@@ -69,7 +68,7 @@ export class Demon {
         } else if (!this.exploding) {
             const { cannonBullet } = gs;
             if (cannonBullet.state === CannonBulletState.FIRING && bulletIntersects(cannonBullet.x, cannonBullet.y, 8, 
-                    demonMasks[gs.demonType][this.sprite], this.x, this.y)) {
+                    this.split ? splitDemonMasks[this.sprite] : demonMasks[gs.demonType][this.sprite], this.x, this.y)){
                 cannonBullet.load();
                 this.exploding = true;
                 this.explodingCounter = Math.floor(5 * Math.random());
@@ -132,7 +131,7 @@ export class Demon {
             } else {
                 if (this.xEaser.update()) {
                     if (this.tier === Tier.BOTTOM && !this.exploding && this.spawning === 0 
-                            && (!this.split || this.leftHalf) && !gs.divingDemon) {
+                            && (!this.split || (this.leftHalf && this.partner)) && !gs.divingDemon) {
                         if (gs.demonBullets.length === 0 && !gs.cannon.exploding) {
                             createDemonBulletBatch(gs, this);
                         } else if (gs.cannon.exploding || (gs.demonBullets.length > 0 
@@ -204,11 +203,15 @@ export class Demon {
         }
         x1 = clamp(x1, 20, this.split ? 151 : 143);
         if (this.tier === Tier.BOTTOM) {
-            if (x1 > this.x) {
-                x1 = this.x + Math.min(50, x1 - this.x);
-            } else {
-                x1 = this.x - Math.min(50, this.x - x1);
-            }
+            const { demonBullets, demonBulletDropTimerReset } = gs;
+            if (demonBullets.length > 0) {
+                const maxDeltaX = demonBulletDropTimerReset * (198 - demonBullets[demonBullets.length - 1].y) / 10;
+                if (x1 > this.x) {
+                    x1 = this.x + Math.min(maxDeltaX, x1 - this.x);
+                } else {
+                    x1 = this.x - Math.min(maxDeltaX, this.x - x1);
+                }
+            }            
         }
         this.xEaser.reset(this.x, x1, 2 * Math.abs(x1 - this.x + 1));
     }
