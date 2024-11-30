@@ -9,17 +9,17 @@ import { Demon } from './demon';
 import { GameState } from './game-state';
 
 // TODO
-// - DIVING COLLISION
 // - GAME OVER
 // - PAUSE REGION
 // - IMPROVE MIN DISTANCE OF SHOOTER DEMON
-// - PROMOTING FINAL DEMONS TO BOTTOM
+// - PROMOTE LAST SPLIT DEMON
+// - FAST CANNON BULLET MISSING TARGETS!
 
 let gs: GameState;
 
 function init() {
     gs = new GameState();
-    gs.setLevel(0); // TODO
+    gs.setLevel(10); // TODO
 }
 
 function trySpawnDemon() {
@@ -134,9 +134,29 @@ export function update() {
     }
 
     for (let i = demons.length - 1; i >= 0; --i) {
-        const demon = demons[i];
-        demon.update(gs);
+        demons[i].update(gs);
     }
+
+    if (gs.level >= 4 && gs.spawnedDemons === 8) {
+        let maxTier = Tier.TOP;
+        for (let i = demons.length - 1; i >= 0; --i) {
+            const demon = demons[i];
+            if (demon.tier > Tier.BOTTOM) {
+                continue;
+            }
+            maxTier = Math.max(maxTier, demons[i].tier);
+        }
+        const tierInc = Tier.BOTTOM - maxTier;
+        if (tierInc > 0) {
+            for (let i = demons.length - 1; i >= 0; --i) {
+                const demon = demons[i];
+                if (demon.tier > Tier.BOTTOM) {
+                    continue;
+                }
+                demon.tier += tierInc;
+            }
+        }
+    }  
 
     cannonBullet.update(gs);
 }

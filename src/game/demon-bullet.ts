@@ -1,5 +1,5 @@
 import { GameState } from './game-state';
-import { cannonSpriteAndMask, colors, demonShots } from '@/graphics';
+import { cannonMask, colors, demonShots } from '@/graphics';
 import { Demon } from './demon';
 import { bulletIntersects } from '@/math';
 import { CANNON_Y } from './cannon';
@@ -102,9 +102,9 @@ export class DemonBullet {
             }
             
             const x = this.x + this.xOffset;
-            if (bulletIntersects(x + this.shots[0], y0, y1 - y0 + 1, cannonSpriteAndMask.mask, cannon.x, CANNON_Y)
+            if (bulletIntersects(x + this.shots[0], y0, y1 - y0 + 1, cannonMask, cannon.x, CANNON_Y)
                     || (this.shots.length > 1 && bulletIntersects(x + this.shots[1], y0, y1 - y0 + 1, 
-                            cannonSpriteAndMask.mask, cannon.x, CANNON_Y))) {
+                            cannonMask, cannon.x, CANNON_Y))) {
                 cannon.explode();            
             }
         }

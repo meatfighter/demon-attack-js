@@ -4,6 +4,7 @@ class RGBColor {
 }
 
 export type Sprite = HTMLCanvasElement;
+export type Mask = boolean[][];
 
 export enum Resolution {
     WIDTH = 160,
@@ -22,26 +23,24 @@ export enum PhysicalDimensions {
     HEIGHT = 228,
 }
 
-export class SpriteAndMask {
-    constructor(public readonly sprite: Sprite, public readonly mask: boolean[][]) {        
-    }
-}
-
 export const colors: string[] = new Array<string>(256);
 
 export const baseSprites: Sprite[] = new Array<Sprite>(121);
 export const bunkerSprites: Sprite[] = new Array<Sprite>(62);
 export const digitSprites: Sprite[] = new Array<Sprite>(10);
 
-export const demonSpriteAndMasks: SpriteAndMask[][][] = new Array<SpriteAndMask[][]>(7); // palette, demon, sprite
+export const demonSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, demon, sprite
+export const demonMasks: Mask[][] = new Array<Mask[]>(6); // demon, sprite
 export const demonExplosionSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, (0=explodes, 1=splits), sprite
 export const demonSpawnSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, sprite, (0=left, 1=right)
 export const demonShots: number[][] = new Array<number[]>(16); // shot, (0=left, 1=right)
 
-export const splitDemonSpriteAndMasks: SpriteAndMask[][] = new Array<SpriteAndMask[]>(7); // palette, sprite
+export const splitDemonSprites: Sprite[][] = new Array<Sprite[]>(7); // palette, sprite
+export const splitDemonMasks: Mask[] = new Array<Mask>(3); // sprite
 export const splitDemonExplosionSprites: Sprite[][] = new Array<Sprite[]>(7); // palette, sprite
 
-export let cannonSpriteAndMask: SpriteAndMask;
+export let cannonSprite: Sprite;
+export let cannonMask: Mask;
 export const cannonExplosionSprites: Sprite[] = new Array<Sprite>(8);
 
 function createSprite(width: number, height: number, callback: (imageData: ImageData) => void): Sprite {
@@ -58,19 +57,21 @@ function createSprite(width: number, height: number, callback: (imageData: Image
     return sprite;
 }
 
-function createSpriteAndMask(width: number, height: number, callback: (imageData: ImageData) => void): SpriteAndMask {
-    let mask: boolean[][] = new Array<boolean[]>(height);
-    const sprite = createSprite(width, height, imageData => {
-        callback(imageData);
-        const { data } = imageData;
-        for (let y = 0, i = 3; y < height; ++y) {
-            mask[y] = new Array<boolean>(width);
-            for (let x = 0; x < width; ++x, i += 4) {
-                mask[y][x] = data[i] !== 0;
-            }
+function createMask(sprite: Sprite): Mask {
+    const mask = new Array<boolean[]>(sprite.height);
+    const ctx = sprite.getContext('2d');
+    if (!ctx) {
+        throw new Error('Failed to create canvas rendering context.');
+    }
+    const imageData = ctx.getImageData(0, 0, sprite.width, sprite.height);
+    const { data } = imageData;
+    for (let y = 0, i = 3; y < sprite.height; ++y) {
+        mask[y] = new Array<boolean>(sprite.width);
+        for (let x = 0; x < sprite.width; ++x, i += 4) {
+            mask[y][x] = data[i] !== 0;
         }
-    });   
-    return new SpriteAndMask(sprite, mask);
+    }
+    return mask;
 }
 
 function extractPalette(): RGBColor[] {
@@ -170,13 +171,13 @@ function extractSprites() {
     // demons
     for (let level = 0; level < 7; ++level) {
         const colOffset = Offsets.DEMON_COLS + (level << 3);
-        demonSpriteAndMasks[level] = new Array<SpriteAndMask[]>(6);
+        demonSprites[level] = new Array<Sprite[]>(6);
         for (let demon = 0; demon < 6; ++demon) {
             const demonOffset = Offsets.DEMON_GFX + 24 * demon;
-            demonSpriteAndMasks[level][demon] = new Array<SpriteAndMask>(3);            
+            demonSprites[level][demon] = new Array<Sprite>(3);            
             for (let sprite = 0; sprite < 3; ++sprite) {
                 const spriteOffset = demonOffset + (sprite << 3);
-                demonSpriteAndMasks[level][demon][sprite] = createSpriteAndMask(16, 8, imageData => {
+                demonSprites[level][demon][sprite] = createSprite(16, 8, imageData => {
                     for (let y = 0; y < 8; ++y) {
                         const col = palette[binStr.charCodeAt(colOffset + y)];
                         const byte = binStr.charCodeAt(spriteOffset + y);
@@ -189,6 +190,12 @@ function extractSprites() {
                     }
                 });                
             }
+        }
+    }
+    for (let demon = 0; demon < 6; ++demon) {
+        demonMasks[demon] = new Array<Mask>(3);
+        for (let sprite = 0; sprite < 3; ++sprite) {
+            demonMasks[demon][sprite] = createMask(demonSprites[0][demon][sprite]);
         }
     }
    
@@ -254,10 +261,10 @@ function extractSprites() {
     // split demons
     for (let level = 0; level < 7; ++level) {
         const colOffset = Offsets.DEMON_COLS + (level << 3);
-        splitDemonSpriteAndMasks[level] = new Array<SpriteAndMask>(3);
+        splitDemonSprites[level] = new Array<Sprite>(3);
         for (let sprite = 0; sprite < 3; ++sprite) {
             const spriteOffset = Offsets.SPLIT_DEMON_GFX + (sprite << 3);
-            splitDemonSpriteAndMasks[level][sprite] = createSpriteAndMask(8, 8, imageData => {
+            splitDemonSprites[level][sprite] = createSprite(8, 8, imageData => {
                 for (let y = 0; y < 8; ++y) {
                     const col = palette[binStr.charCodeAt(colOffset + y)];
                     const byte = binStr.charCodeAt(spriteOffset + y);
@@ -269,6 +276,9 @@ function extractSprites() {
                 }
             });                
         }
+    }
+    for (let sprite = 0; sprite < 3; ++sprite) {
+        splitDemonMasks[sprite] = createMask(splitDemonSprites[0][sprite]);
     }
     
     // split demon explodes
@@ -293,7 +303,7 @@ function extractSprites() {
     
     // cannon
     const cannonCol = palette[0x56];
-    cannonSpriteAndMask = createSpriteAndMask(7, 12, imageData => {
+    cannonSprite = createSprite(7, 12, imageData => {
         const offset = Offsets.CANNON_GFX + 11;
         for (let y = 0; y < 12; ++y) {
             const byte = binStr.charCodeAt(offset - y);
@@ -304,6 +314,7 @@ function extractSprites() {
             }
         }
     });
+    cannonMask = createMask(cannonSprite);
 
     // cannon explodes
     for (let sprite = 0; sprite < 8; ++sprite) {

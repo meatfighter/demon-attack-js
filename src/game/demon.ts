@@ -1,16 +1,20 @@
-import { Easer } from "./easer";
-import { Tier } from "./tier";
-import { gaussianRandom, clamp, bulletIntersects } from '@/math';
-import { GameState } from "./game-state";
+import { Easer } from './easer';
+import { Tier } from './tier';
+import { gaussianRandom, clamp, bulletIntersects, spritesIntersect } from '@/math';
+import { GameState } from './game-state';
 import {
     Sprite,
-    SpriteAndMask, 
-    demonSpriteAndMasks, 
+    Mask,
+    demonSprites,
+    demonMasks, 
     demonSpawnSprites, 
     demonExplosionSprites, 
-    splitDemonSpriteAndMasks, 
-    splitDemonExplosionSprites } from '@/graphics';
-import { CannonBulletState } from "./cannon-bullet";
+    splitDemonSprites,
+    splitDemonMasks, 
+    splitDemonExplosionSprites, 
+    cannonMask} from '@/graphics';
+import { CANNON_Y } from './cannon';
+import { CannonBulletState } from './cannon-bullet';
 import { createDemonBulletBatch } from './demon-bullet';
 
 export class Demon {
@@ -65,7 +69,7 @@ export class Demon {
         } else if (!this.exploding) {
             const { cannonBullet } = gs;
             if (cannonBullet.state === CannonBulletState.FIRING && bulletIntersects(cannonBullet.x, cannonBullet.y, 8, 
-                    demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite].mask, this.x, this.y)) {
+                    demonMasks[gs.demonType][this.sprite], this.x, this.y)) {
                 cannonBullet.load();
                 this.exploding = true;
                 this.explodingCounter = Math.floor(5 * Math.random());
@@ -92,18 +96,25 @@ export class Demon {
         }
 
         if (this.tier === Tier.DIVING) {
-            if (this.xEaser.update()) {
-                this.resetXEaserForDive(gs);
-            }
-            this.x = this.xEaser.v;
-
-            if (this.yEaser.update()) {
-                this.resetYEaserForDive(gs);
-            }
-            this.y = this.yEaser.v;
-
-            if (this.y >= 188) {
+            const { cannon } = gs;
+            if (!this.exploding && !cannon.exploding 
+                    && spritesIntersect(splitDemonMasks[this.sprite], this.x, this.y, cannonMask, cannon.x, CANNON_Y)) {
+                cannon.explode();
                 gs.removeDemon(this);
+            } else {
+                if (this.xEaser.update()) {
+                    this.resetXEaserForDive(gs);
+                }
+                this.x = this.xEaser.v;
+
+                if (this.yEaser.update()) {
+                    this.resetYEaserForDive(gs);
+                }
+                this.y = this.yEaser.v;
+                
+                if (this.y >= 188) {
+                    gs.removeDemon(this);
+                }
             }
         } else {
             if (this.split && !this.leftHalf) {
@@ -138,7 +149,7 @@ export class Demon {
             if (!this.split || this.leftHalf || !this.partner) {
                 if (this.yEaser.update()) {
                     if (this.split && !this.partner && !gs.divingDemon && !gs.cannon.exploding 
-                            && this.tier === Tier.BOTTOM) {
+                            && gs.demonBullets.length === 0 && this.tier === Tier.BOTTOM) {
                         this.startDiving(gs);
                     } else {
                         this.resetYEaserRandomly(gs);
@@ -152,13 +163,15 @@ export class Demon {
     private startDiving(gs: GameState) {
         this.tier = Tier.DIVING;
         const { demons } = gs;
+
         for (let i = demons.length - 1; i >= 0; --i) {
             const demon = demons[i];
             if (demon === this) {
                 continue;
             }
-            demon.tier = Math.min(Tier.BOTTOM, demon.tier + 1);
+            ++demon.tier;
         }
+
         gs.divingDemon = this;
         this.yEaser.v1 = this.yEaser.v0 - 1;
         this.resetXEaserForDive(gs);
@@ -269,8 +282,8 @@ export class Demon {
             }
         } else if (this.spawning > 0) {
             if (this.spawning === 1) {
-                ctx.drawImage(demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite].sprite, 
-                        Math.floor(this.x), Math.floor(this.y), 32, 8);
+                ctx.drawImage(demonSprites[gs.demonPalette][gs.demonType][this.sprite], Math.floor(this.x), 
+                        Math.floor(this.y), 32, 8);
             } else {
                 const offset = (this.spawning - 1) << 2;
                 ctx.drawImage(demonSpawnSprites[gs.demonPalette][this.sprite][0], Math.floor(this.x - offset), 
@@ -279,13 +292,8 @@ export class Demon {
                         Math.floor(this.y), 32, 8);
             }
         } else {
-            let spriteAndMask: SpriteAndMask;
-            if (this.split) {
-                spriteAndMask = splitDemonSpriteAndMasks[gs.demonPalette][this.sprite];
-            } else {
-                spriteAndMask = demonSpriteAndMasks[gs.demonPalette][gs.demonType][this.sprite];
-            }
-            ctx.drawImage(spriteAndMask.sprite, Math.floor(this.x), Math.floor(this.y));
+            ctx.drawImage(this.split ? splitDemonSprites[gs.demonPalette][this.sprite] : 
+                    demonSprites[gs.demonPalette][gs.demonType][this.sprite], Math.floor(this.x), Math.floor(this.y));
         }
     }
 }

@@ -1,4 +1,4 @@
-import { cannonSpriteAndMask, cannonExplosionSprites } from "@/graphics";
+import { cannonSprite, cannonExplosionSprites } from "@/graphics";
 import { isLeftPressed, isRightPressed } from "@/input";
 import { GameState } from "./game-state";
 
@@ -50,7 +50,7 @@ export class Cannon {
         if (this.exploding) {
             ctx.drawImage(cannonExplosionSprites[this.explodingCounter >> 3], this.x - 4, CANNON_Y - 22);
         } else {
-            ctx.drawImage(cannonSpriteAndMask.sprite, this.x, CANNON_Y);
+            ctx.drawImage(cannonSprite, this.x, CANNON_Y);
         }
     }
 }
