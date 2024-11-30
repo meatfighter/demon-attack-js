@@ -137,7 +137,8 @@ export class Demon {
 
             if (!this.split || this.leftHalf || !this.partner) {
                 if (this.yEaser.update()) {
-                    if (this.split && !this.partner && !gs.divingDemon && this.tier === Tier.BOTTOM) {
+                    if (this.split && !this.partner && !gs.divingDemon && !gs.cannon.exploding 
+                            && this.tier === Tier.BOTTOM) {
                         this.startDiving(gs);
                     } else {
                         this.resetYEaserRandomly(gs);

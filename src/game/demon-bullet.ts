@@ -83,28 +83,30 @@ export class DemonBullet {
             }
         }
 
-        const yMin = Math.floor(this.demon.y + 12);
-        let y0: number;
-        let y1: number;
-        if (lasers) {
-            y0 = this.y;
-            y1 = y0 + 7;
-        } else {
-            y0 = (gs.demonBulletDropTimer === 1) ? this.y : this.y + 4;
-            y1 = y0 + 3;
-        }
-        y0 = Math.max(yMin, y0);
-        y1 = Math.min(196, y1);
-        if (y0 > 196 || y1 < y0) {
-            return;
-        }
         const { cannon } = gs;
-        const x = this.x + this.xOffset;
-        if (bulletIntersects(x + this.shots[0], y0, y1 - y0 + 1, cannonSpriteAndMask.mask, cannon.x, CANNON_Y)
-                || (this.shots.length > 1 && bulletIntersects(x + this.shots[1], y0, y1 - y0 + 1, 
-                        cannonSpriteAndMask.mask, cannon.x, CANNON_Y))) {
-            cannon.exploding = true;
-            gs.demonBullets.length = 0;
+        if (!cannon.exploding) {
+            const yMin = Math.floor(this.demon.y + 12);
+            let y0: number;
+            let y1: number;
+            if (lasers) {
+                y0 = this.y;
+                y1 = y0 + 7;
+            } else {
+                y0 = (gs.demonBulletDropTimer === 1) ? this.y : this.y + 4;
+                y1 = y0 + 3;
+            }
+            y0 = Math.max(yMin, y0);
+            y1 = Math.min(196, y1);
+            if (y0 > 196 || y1 < y0) {
+                return;
+            }
+            
+            const x = this.x + this.xOffset;
+            if (bulletIntersects(x + this.shots[0], y0, y1 - y0 + 1, cannonSpriteAndMask.mask, cannon.x, CANNON_Y)
+                    || (this.shots.length > 1 && bulletIntersects(x + this.shots[1], y0, y1 - y0 + 1, 
+                            cannonSpriteAndMask.mask, cannon.x, CANNON_Y))) {
+                cannon.explode();            
+            }
         }
     }
 

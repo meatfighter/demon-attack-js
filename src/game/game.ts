@@ -8,11 +8,18 @@ import { Tier } from './tier';
 import { Demon } from './demon';
 import { GameState } from './game-state';
 
+// TODO
+// - DIVING COLLISION
+// - GAME OVER
+// - PAUSE REGION
+// - IMPROVE MIN DISTANCE OF SHOOTER DEMON
+// - PROMOTING FINAL DEMONS TO BOTTOM
+
 let gs: GameState;
 
 function init() {
     gs = new GameState();
-    gs.setLevel(20); // TODO
+    gs.setLevel(0); // TODO
 }
 
 function trySpawnDemon() {
@@ -79,24 +86,50 @@ function trySpawnDemon() {
             }
         }
     }
-    if (tier !== Tier.NONE && yMax - yMin + 1 >= 8) {
+    if (tier !== Tier.NONE && yMax - yMin + 1 >= 8 && gs.spawnedDemons < 8) {        
         demons.push(new Demon(Math.floor(20 + 123 * Math.random()), yMin + (yMax - yMin) * Math.random(), tier));
+        ++gs.spawnedDemons;
         gs.spawnDelay = 8 + Math.floor(24 * Math.random());
     }
 }
 
 export function update() {
-    trySpawnDemon();
-
     const { cannon, cannonBullet, demons, demonBullets } = gs;
-    
+
+    if (gs.spawnedDemons === 8 && demons.length === 0 && demonBullets.length === 0 && !cannon.exploding) {        
+        gs.setLevel(gs.level + 1);
+        if (cannon.exploded || gs.bunkers === 6) {            
+            ++gs.level;
+            cannon.reset();
+            cannonBullet.load();            
+        } else {
+            gs.animatingExtraBunker = true;
+        }
+    }
+
+    if (gs.animatingExtraBunker) {        
+        if (gs.bunkerColor === bunkerSprites.length - 1) {
+            gs.animatingExtraBunker = false;
+            gs.bunkerColor = 0;
+            ++gs.bunkers;            
+            cannon.reset();
+            cannonBullet.load();
+        } else {
+            ++gs.bunkerColor;
+        }   
+    }
+
+    if (!gs.animatingExtraBunker) {
+        trySpawnDemon();
+    }
+   
     cannon.update(gs);
 
     if (gs.demonBulletDropTimer === 0) {
         gs.demonBulletDropTimer = gs.demonBulletDropTimerReset;
     }
     --gs.demonBulletDropTimer;    
-    for (let i = 0; i < demonBullets.length; ++i) {
+    for (let i = demonBullets.length - 1; i >= 0; --i) {
         demonBullets[i].update(gs);
     }
 

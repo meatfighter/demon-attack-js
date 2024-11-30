@@ -20,11 +20,12 @@ export class GameState {
     cannonFiringSpeed = 0;
     demons = new Array<Demon>();
     spawnDelay = 30;
+    spawnedDemons = 0;
     divingDemon: Demon | null = null;
-
     demonBullets = new Array<DemonBullet>();
     demonBulletDropTimer = 0;
     demonBulletDropTimerReset = 0;
+    animatingExtraBunker = false;
 
     setLevel(level: number) {
         this.level = level;
@@ -32,6 +33,9 @@ export class GameState {
         this.demonType = (level >> 1) % 6;
         this.cannonFiringSpeed = CANNON_FIRING_SPEEDS[Math.min(8, level)];
         this.demonBulletDropTimerReset = DEMON_FIRING_SPEEDS[(level < 4) ? level : (level & 1) + 4];
+        this.spawnedDemons = 0;
+        this.spawnDelay = 30;
+        this.spawnedDemons = 0;        
     }
 
     removeDemon(demon: Demon) {
