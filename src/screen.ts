@@ -6,6 +6,9 @@ import { playSoundEffect } from './sfx';
 import { PhysicalDimensions, Resolution } from './graphics';
 import { startInput, stopInput } from './input';
 import { renderScreen } from './game/game';
+import { TAU } from './math';
+
+let dpr: number;
 
 let mainCanvas: HTMLCanvasElement | null;
 let mainCtx: CanvasRenderingContext2D | null;
@@ -77,8 +80,14 @@ export function exit() {
     }
 }
 
+function drawButton(ctx: CanvasRenderingContext2D, x: number, y: number) {
+    ctx.beginPath();
+    ctx.arc(x, y, 22, 0, TAU);
+    ctx.stroke();
+}
+
 export function render() {
-    if (!mainCtx) {
+    if (!mainCtx || !mainCanvas) {
         windowResized();
         return;
     }
@@ -86,14 +95,23 @@ export function render() {
         return;
     }
     
-    mainCtx.fillStyle = 'gray';
+    mainCtx.imageSmoothingEnabled = false;
+    mainCtx.fillStyle = '#1f1f1f7f';
+    mainCtx.lineWidth = 1;
     mainCtx.fillRect(0, 0, mainCanvasWidth, mainCanvasHeight);
 
     ctx.imageSmoothingEnabled = false;
     renderScreen(ctx);
 
-    mainCtx.imageSmoothingEnabled = false;
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
+
+    // center: 132, 110
+    // 110 from bottom
+    mainCtx.imageSmoothingEnabled = true;
+    mainCtx.strokeStyle = 'white';
+    drawButton(mainCtx, dpr * 66, mainCanvasHeight - dpr * 111);
+    drawButton(mainCtx, dpr * 154, mainCanvasHeight - dpr * 111);
+    drawButton(mainCtx, mainCanvasWidth - dpr * 111, mainCanvasHeight - dpr * 67);
 }
 
 function windowResized() {
@@ -119,7 +137,7 @@ function windowResized() {
     mainCanvas.style.left = '0px';
     mainCanvas.style.top = '0px';
 
-    const dpr = window.devicePixelRatio || 1;
+    dpr = window.devicePixelRatio || 1;
     mainCanvas.width = Math.floor(dpr * innerWidth);
     mainCanvas.height = Math.floor(dpr * innerHeight);
 

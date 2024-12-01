@@ -1,5 +1,7 @@
 import { Mask } from './graphics';
 
+export const TAU = 2 * Math.PI;
+
 export function gaussianRandom(mean: number, stdDev: number): number {
     let u: number;
     let v: number;

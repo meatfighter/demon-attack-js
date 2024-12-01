@@ -4,6 +4,8 @@ gamepad
 
 virtual gamepad
 
+save level, remaining demons, score, bunkers
+
 menu:
 
 [ NEW GAME ] [ CONTINUE ]
@@ -15,3 +17,8 @@ menu:
 [ BUTTON MAPPING ]
 
 [ CLEAR HIGH SCORE ]
+
+[ X ] NORMAL 
+[   ] DIFFICULT
+
+[   ] TRACER
