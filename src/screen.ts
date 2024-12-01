@@ -8,12 +8,13 @@ import { startInput, stopInput } from './input';
 import { renderScreen } from './game/game';
 import { TAU } from './math';
 
-let dpr: number;
+export let dpr: number;
 
-let mainCanvas: HTMLCanvasElement | null;
+export let mainCanvas: HTMLCanvasElement;
 let mainCtx: CanvasRenderingContext2D | null;
-let mainCanvasWidth: number;
-let mainCanvasHeight: number;
+export let mainCanvasWidth: number;
+export let mainCanvasHeight: number;
+export let mainCanvasInverseTransform: DOMMatrix;
 
 let screenCanvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D | null;
@@ -48,10 +49,6 @@ export function enter() {
 
     document.body.style.backgroundColor = '#C2BCB1';
 
-    window.addEventListener('resize', windowResized);    
-    document.addEventListener('visibilitychange', onVisibilityChanged);
-    startInput();
-
     screenCanvas = document.createElement('canvas');
     screenCanvas.width = Resolution.WIDTH;
     screenCanvas.height = Resolution.HEIGHT;  
@@ -60,6 +57,11 @@ export function enter() {
     const mainElement = document.getElementById("main-content") as HTMLElement;
     mainElement.innerHTML = `<canvas id="main-canvas" class="canvas" width="1" height="1"></canvas>`;
     mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement;
+    mainCanvas.style.touchAction = 'none';
+
+    window.addEventListener('resize', windowResized);    
+    document.addEventListener('visibilitychange', onVisibilityChanged);
+    startInput();
 
     acquireWakeLock();
     updatePixelRatio();
@@ -87,7 +89,7 @@ function drawButton(ctx: CanvasRenderingContext2D, x: number, y: number) {
 }
 
 export function render() {
-    if (!mainCtx || !mainCanvas) {
+    if (!mainCtx) {
         windowResized();
         return;
     }
@@ -96,7 +98,7 @@ export function render() {
     }
     
     mainCtx.imageSmoothingEnabled = false;
-    mainCtx.fillStyle = '#1f1f1f7f';
+    mainCtx.fillStyle = '#1f1f1f';
     mainCtx.lineWidth = 1;
     mainCtx.fillRect(0, 0, mainCanvasWidth, mainCanvasHeight);
 
@@ -105,13 +107,14 @@ export function render() {
 
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
 
+    // TODO 
     // center: 132, 110
     // 110 from bottom
     mainCtx.imageSmoothingEnabled = true;
-    mainCtx.strokeStyle = 'white';
-    drawButton(mainCtx, dpr * 66, mainCanvasHeight - dpr * 111);
-    drawButton(mainCtx, dpr * 154, mainCanvasHeight - dpr * 111);
-    drawButton(mainCtx, mainCanvasWidth - dpr * 111, mainCanvasHeight - dpr * 67);
+    mainCtx.strokeStyle = '#ffffff7f';
+    drawButton(mainCtx, 88, mainCanvasHeight - 111);
+    drawButton(mainCtx, 176, mainCanvasHeight - 111);
+    drawButton(mainCtx, mainCanvasWidth - 133, mainCanvasHeight - 67);
 }
 
 function windowResized() {
@@ -121,10 +124,7 @@ function windowResized() {
     }
 
     mainCtx = null;
-    mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement | null;
-    if (!mainCanvas) {``
-        return;
-    }
+    mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement;
     mainCanvas.style.display = 'none';
 
     const innerWidth = window.innerWidth;
@@ -144,20 +144,17 @@ function windowResized() {
     const transform = new DOMMatrix();
     if (innerWidth >= innerHeight) {
         // Landscape mode
-        mainCanvasWidth = mainCanvas.width;
-        mainCanvasHeight = mainCanvas.height;
-        transform.a = 1;
-        transform.d = 1;
+        mainCanvasWidth = innerWidth;
+        mainCanvasHeight = innerHeight;
+        transform.a = transform.d = dpr;
         transform.b = transform.c = transform.e = transform.f = 0;
     } else {
         // Portrait mode
-        mainCanvasWidth = mainCanvas.height;
-        mainCanvasHeight = mainCanvas.width;
-        transform.a = 0;
-        transform.b = -1;
-        transform.c = 1;
-        transform.d = 0;
-        transform.e = 0;
+        mainCanvasWidth = innerHeight;
+        mainCanvasHeight = innerWidth;
+        transform.a = transform.d = transform.e = 0;
+        transform.c = dpr;
+        transform.b = -transform.c;        
         transform.f = dpr * innerHeight;
     }
 
@@ -166,6 +163,7 @@ function windowResized() {
         return;
     }
     mainCtx.setTransform(transform);
+    mainCanvasInverseTransform = transform.inverse();
 
     screenHeight = mainCanvasHeight;
     screenWidth = screenHeight * PhysicalDimensions.WIDTH / PhysicalDimensions.HEIGHT;
