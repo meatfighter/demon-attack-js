@@ -8,16 +8,11 @@ import { Tier } from './tier';
 import { Demon } from './demon';
 import { GameState } from './game-state';
 
-// TODO
-// - PAUSE REGION
-// - BULLET DISTRIBUTIONS
-// - LEVEL DIFFICULTY?
-
 let gs: GameState;
 
 function init() {
     gs = new GameState();
-    gs.setLevel(12); // TODO
+    gs.setLevel(0); // TODO
 }
 
 function trySpawnDemon() {
@@ -135,7 +130,7 @@ export function update() {
     if (gs.demonBulletDropTimer === 0) {
         gs.demonBulletDropTimer = gs.demonBulletDropTimerReset;
     }
-    --gs.demonBulletDropTimer;    
+    --gs.demonBulletDropTimer;
     for (let i = demonBullets.length - 1; i >= 0; --i) {
         demonBullets[i].update(gs);
     }

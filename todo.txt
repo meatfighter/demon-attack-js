@@ -1,0 +1,17 @@
+sound fx
+
+gamepad
+
+virtual gamepad
+
+menu:
+
+[ NEW GAME ] [ CONTINUE ]
+
+[ CONFIG ]
+
+[ VOLUME / MUTE ]
+
+[ BUTTON MAPPING ]
+
+[ CLEAR HIGH SCORE ]
