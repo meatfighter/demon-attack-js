@@ -6,23 +6,30 @@ import { CANNON_Y } from './cannon';
 
 const color = colors[0x4e];
 
-// max bullet y = 190
-// max draw y = 196
-// bullets drop in 8 pixel units
-// only lower 4 pixels drawn
-// every timer, they may randomly shift, one before the upper halves are drawn
+const FREQS = [
+  //   1   2   3   4   5   6
+    [  1,  0, 18,  5,  0,  0 ], // 0
+    [  2, 18,  2,  9,  0,  0 ], // 1   
+    [  1, 12,  3, 13,  0,  0 ], // 4
+    [  0, 14,  1,  7,  5,  4 ], // 5
+    [  0, 28,  4, 25,  2,  1 ], // 8
+    [  3, 23,  2, 15,  5, 14 ], // 9
+];
 
-                                //  1   2   3   4   5   6   7
-const DEMON_BULLET_FREQUENCIES = [  1,  6, 15, 20, 15,  6,  1 ]; // from Pascal's triangle
-const DEMON_BULLET_BATCH_SIZES = new Array<number>();
+const BATCHES: number[][] = [];
 
 function init() {
-    for (let i = DEMON_BULLET_FREQUENCIES.length - 1; i >= 0; --i) {
-        const value = i + 1;
-        for (let j = DEMON_BULLET_FREQUENCIES[i] - 1; j >= 0; --j) {
-            DEMON_BULLET_BATCH_SIZES.push(value);
+    for (const freqs of FREQS) {
+        const bs: number[] = [];
+        for (let i = 0; i < freqs.length; ++i) {
+            const freq = freqs[i];
+            const value = i + 1;
+            for (let j = 0; j < freq; ++j) {
+                bs.push(value);
+            }
         }
-    }    
+        BATCHES.push(bs);
+    }   
 }
 
 init();
@@ -31,8 +38,13 @@ export function createDemonBulletBatch(gs: GameState, demon: Demon) {
     const { level, demonBullets } = gs;
     const lasers = ((level >> 1) & 1) === 1;
     let x = Math.floor(demon.x) + 4;    
-    for (let i = DEMON_BULLET_BATCH_SIZES[Math.floor(DEMON_BULLET_BATCH_SIZES.length * Math.random())] - 1, 
-            y = 8 * Math.floor(demon.y / 8) + 6; i >= 0; --i, y -= 8) {
+    let batchSize = 4;
+    if (!lasers) {
+        const levelMod12 = level % 12;
+        const batch = BATCHES[((levelMod12 >> 1) & 0b110) | (levelMod12 & 0b001)];
+        batchSize = batch[Math.floor(batch.length * Math.random())];
+    }
+    for (let i = batchSize - 1, y = 8 * Math.floor(demon.y / 8) + 6; i >= 0; --i, y -= 8) {
         if (Math.random() < 0.125) {
             y -= 8;
         }        

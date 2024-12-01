@@ -104,7 +104,7 @@ function windowResized() {
 
     mainCtx = null;
     mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement | null;
-    if (!mainCanvas) {
+    if (!mainCanvas) {``
         return;
     }
     mainCanvas.style.display = 'none';
