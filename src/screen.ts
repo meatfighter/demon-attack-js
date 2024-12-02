@@ -14,7 +14,7 @@ export let mainCanvas: HTMLCanvasElement;
 let mainCtx: CanvasRenderingContext2D | null;
 export let mainCanvasWidth: number;
 export let mainCanvasHeight: number;
-export let mainCanvasInverseTransform: DOMMatrix;
+export let mainCanvasLandscape: boolean;
 
 let screenCanvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D | null;
@@ -29,7 +29,6 @@ let screenY: number;
 
 const leftButton = new Button();
 const rightButton = new Button();
-const fireButton = new Button();
 
 function updatePixelRatio() {
     if (removeMediaEventListener !== null) {
@@ -68,7 +67,6 @@ export function enter() {
 
     addButton(leftButton);
     addButton(rightButton);
-    addButton(fireButton);
     startInput();
 
     acquireWakeLock();
@@ -85,7 +83,6 @@ export function exit() {
     stopInput();
     removeButton(leftButton);
     removeButton(rightButton);
-    removeButton(fireButton);
     
     if (removeMediaEventListener !== null) {
         removeMediaEventListener();
@@ -111,10 +108,6 @@ export function render() {
     renderScreen(ctx);
 
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
-
-    leftButton.render(mainCtx);
-    rightButton.render(mainCtx);
-    fireButton.render(mainCtx);
 }
 
 function windowResized() {
@@ -144,12 +137,14 @@ function windowResized() {
     const transform = new DOMMatrix();
     if (innerWidth >= innerHeight) {
         // Landscape mode
+        mainCanvasLandscape = true;
         mainCanvasWidth = innerWidth;
         mainCanvasHeight = innerHeight;
         transform.a = transform.d = dpr;
         transform.b = transform.c = transform.e = transform.f = 0;
     } else {
         // Portrait mode
+        mainCanvasLandscape = false;
         mainCanvasWidth = innerHeight;
         mainCanvasHeight = innerWidth;
         transform.a = transform.d = transform.e = 0;
@@ -163,7 +158,6 @@ function windowResized() {
         return;
     }
     mainCtx.setTransform(transform);
-    mainCanvasInverseTransform = transform.inverse();
 
     screenHeight = mainCanvasHeight;
     screenWidth = screenHeight * PhysicalDimensions.WIDTH / PhysicalDimensions.HEIGHT;
@@ -177,23 +171,17 @@ function windowResized() {
         screenY = 0;
     }
 
-    leftButton.x = 88;
-    leftButton.y = mainCanvasHeight / 2 - 22;
-    leftButton.width = 44;
-    leftButton.height = 44;
+    leftButton.x = 0;
+    leftButton.y = 0;
+    leftButton.width = mainCanvasWidth / 2;
+    leftButton.height = mainCanvasHeight;
     leftButton.buttonType = ButtonType.LEFT;
 
-    rightButton.x = 176;
-    rightButton.y = mainCanvasHeight / 2 - 22;
-    rightButton.width = 44;
-    rightButton.height = 44;
+    rightButton.x = mainCanvasWidth / 2
+    rightButton.y = 0;
+    rightButton.width = mainCanvasWidth / 2;
+    rightButton.height = mainCanvasHeight;
     rightButton.buttonType = ButtonType.RIGHT;
-    
-    fireButton.x = mainCanvasWidth - 133;
-    fireButton.y = mainCanvasHeight / 2 - 22;
-    fireButton.width = 44;
-    fireButton.height = 44;
-    fireButton.buttonType = ButtonType.FIRE;    
 
     render();
 }

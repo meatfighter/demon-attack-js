@@ -21,6 +21,9 @@ body, button, input, select, textarea {
     display: block;
     position: absolute;
     touch-action: none;
+    -webkit-user-select: none;
+    -webkit-touch-callout: none;
+    -webkit-tap-highlight-color: transparent;
 }
 
 #start-container {

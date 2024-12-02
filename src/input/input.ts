@@ -1,5 +1,9 @@
-import { mainCanvas, mainCanvasInverseTransform, mainCanvasWidth, mainCanvasHeight } from '@/screen';
+import { mainCanvas, mainCanvasWidth, mainCanvasLandscape } from '@/screen';
 import { Button, ButtonType } from './button';
+
+const FRAMES_PER_SECOND = 60;
+const AUTOFIRE_SECONDS = 5;
+const AUTOFIRE_FRAMES = FRAMES_PER_SECOND * AUTOFIRE_SECONDS;
 
 let leftPressed = 0;
 let rightPressed = 0;
@@ -7,7 +11,7 @@ let firePressed = false;
 
 let leftPointed = 0;
 let rightPointed = 0;
-let firePointed = false;
+let autofire = 0;
 
 class Pointer {
     x = 0;
@@ -35,10 +39,10 @@ export function removeButton(button: Button) {
 export function startInput() {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
-    mainCanvas.addEventListener('pointerdown', onPointerDown);
-    mainCanvas.addEventListener('pointermove', onPointerMove);
-    mainCanvas.addEventListener('pointerup', onPointerUp);
-    mainCanvas.addEventListener('pointercancel', onPointerCancel);
+    mainCanvas.addEventListener('pointerdown', onPointerDown, { passive: false });
+    mainCanvas.addEventListener('pointermove', onPointerMove, { passive: false });
+    mainCanvas.addEventListener('pointerup', onPointerUp, { passive: false });
+    mainCanvas.addEventListener('pointercancel', onPointerCancel, { passive: false });
 }
 
 export function stopInput() {
@@ -48,6 +52,12 @@ export function stopInput() {
     mainCanvas.removeEventListener('pointermove', onPointerMove);
     mainCanvas.removeEventListener('pointerup', onPointerUp);
     mainCanvas.removeEventListener('pointercancel', onPointerCancel);
+}
+
+export function updateInput() {
+    if (autofire > 0) {
+        --autofire;
+    }
 }
 
 function updatePointed() {
@@ -76,6 +86,7 @@ function updatePointed() {
         switch (button.buttonType) {
             case ButtonType.LEFT:
                 if (button.down) {
+                    autofire = AUTOFIRE_FRAMES;
                     leftPointed = rightPointed + 1;
                 } else {
                     leftPointed = 0;
@@ -83,50 +94,57 @@ function updatePointed() {
                 break; 
             case ButtonType.RIGHT:
                 if (button.down) {
+                    autofire = AUTOFIRE_FRAMES;
                     rightPointed = leftPointed + 1;
                 } else {
                     rightPointed = 0;
                 }
-                break;                
-            case ButtonType.FIRE:
-                firePointed = button.down; 
                 break;
         }
     }
 }
 
-function onPointerDown(e: PointerEvent) {
+function getCoordinates(e: PointerEvent): { x: number, y: number } {    
     const r = mainCanvas.getBoundingClientRect();
-    const p = new DOMPoint(e.clientX - r.left, e.clientY - r.top).matrixTransform(mainCanvasInverseTransform);
+    const x = e.clientX - r.left;
+    const y = e.clientY - r.top;
+    if (!mainCanvasLandscape) {
+        return { x: mainCanvasWidth - 1 - y, y: x };
+    }
+    return { x, y };
+}
+
+function onPointerDown(e: PointerEvent) {
+    e.preventDefault();
+    const { x, y } = getCoordinates(e);
     let pointer = pointers.get(e.pointerId);
     if (!pointer) {
         pointer = new Pointer();
         pointers.set(e.pointerId, pointer);
     }
-    pointer.x = p.x;
-    pointer.y = p.y;
+    pointer.x = x;
+    pointer.y = y;
     pointer.down = true;
-    pointer.xDown = p.x;
-    pointer.yDown = p.y;    
+    pointer.xDown = x;
+    pointer.yDown = y;    
     updatePointed();
 } 
 
 function onPointerMove(e: PointerEvent) {
-    const r = mainCanvas.getBoundingClientRect();
-    const p = new DOMPoint(e.clientX - r.left, e.clientY - r.top).matrixTransform(mainCanvasInverseTransform);
+    e.preventDefault();
+    const { x, y } = getCoordinates(e);
     let pointer = pointers.get(e.pointerId);
     if (!pointer) {
         pointer = new Pointer();
         pointers.set(e.pointerId, pointer);
     }
-    pointer.x = p.x;
-    pointer.y = p.y;
+    pointer.x = x;
+    pointer.y = y;
     updatePointed();
 }
   
 function onPointerUp(e: PointerEvent) {
-    const r = mainCanvas.getBoundingClientRect();
-    const p = new DOMPoint(e.clientX - r.left, e.clientY - r.top).matrixTransform(mainCanvasInverseTransform);
+    e.preventDefault();
     let pointer = pointers.get(e.pointerId);
     if (!pointer) {
         pointer = new Pointer();
@@ -150,7 +168,7 @@ export function isRightPressed(): boolean {
 }
 
 export function isFirePressed(): boolean {
-    return firePressed || firePointed;
+    return firePressed || autofire > 0;
 }
 
 function onKeyDown(e: KeyboardEvent) {
