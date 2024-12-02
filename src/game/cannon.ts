@@ -1,5 +1,5 @@
 import { cannonSprite, cannonExplosionSprites } from "@/graphics";
-import { isLeftPressed, isRightPressed } from "@/input";
+import { isLeftPressed, isRightPressed } from "@/input/input";
 import { GameState } from "./game-state";
 
 const CANNON_START_X = 87;

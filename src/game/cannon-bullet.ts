@@ -1,6 +1,6 @@
 import { GameState } from './game-state';
 import { colors } from '@/graphics';
-import { isFirePressed } from '@/input';
+import { isFirePressed } from '@/input/input';
 
 export enum CannonBulletState {
     LOADED,

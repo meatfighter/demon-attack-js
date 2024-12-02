@@ -4,9 +4,9 @@ import { NoParamVoidFunc } from './no-param-void-func';
 import { enter as enterStart } from './start';
 import { playSoundEffect } from './sfx';
 import { PhysicalDimensions, Resolution } from './graphics';
-import { startInput, stopInput } from './input';
+import { startInput, stopInput } from './input/input';
+import { Button, ButtonType } from './input/button';
 import { renderScreen } from './game/game';
-import { TAU } from './math';
 
 export let dpr: number;
 
@@ -26,6 +26,10 @@ let screenWidth: number;
 let screenHeight: number;
 let screenX: number;
 let screenY: number;
+
+const leftButton = new Button();
+const rightButton = new Button();
+const fireButton = new Button();
 
 function updatePixelRatio() {
     if (removeMediaEventListener !== null) {
@@ -82,12 +86,6 @@ export function exit() {
     }
 }
 
-function drawButton(ctx: CanvasRenderingContext2D, x: number, y: number) {
-    ctx.beginPath();
-    ctx.arc(x, y, 22, 0, TAU);
-    ctx.stroke();
-}
-
 export function render() {
     if (!mainCtx) {
         windowResized();
@@ -107,14 +105,9 @@ export function render() {
 
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
 
-    // TODO 
-    // center: 132, 110
-    // 110 from bottom
-    mainCtx.imageSmoothingEnabled = true;
-    mainCtx.strokeStyle = '#ffffff7f';
-    drawButton(mainCtx, 88, mainCanvasHeight - 111);
-    drawButton(mainCtx, 176, mainCanvasHeight - 111);
-    drawButton(mainCtx, mainCanvasWidth - 133, mainCanvasHeight - 67);
+    leftButton.render(mainCtx);
+    rightButton.render(mainCtx);
+    fireButton.render(mainCtx);
 }
 
 function windowResized() {
@@ -176,6 +169,24 @@ function windowResized() {
         screenX = Math.round((mainCanvasWidth - screenWidth) / 2);
         screenY = 0;
     }
+
+    leftButton.x = 88;
+    leftButton.y = mainCanvasHeight / 2 - 22;
+    leftButton.width = 44;
+    leftButton.height = 44;
+    leftButton.buttonType = ButtonType.LEFT;
+
+    rightButton.x = 176;
+    rightButton.y = mainCanvasHeight / 2 - 22;
+    rightButton.width = 44;
+    rightButton.height = 44;
+    rightButton.buttonType = ButtonType.RIGHT;
+    
+    fireButton.x = mainCanvasWidth - 133;
+    fireButton.y = mainCanvasHeight / 2 - 22;
+    fireButton.width = 44;
+    fireButton.height = 44;
+    fireButton.buttonType = ButtonType.FIRE;    
 
     render();
 }
