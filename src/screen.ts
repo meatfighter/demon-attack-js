@@ -4,7 +4,7 @@ import { NoParamVoidFunc } from './no-param-void-func';
 import { enter as enterStart } from './start';
 import { playSoundEffect } from './sfx';
 import { PhysicalDimensions, Resolution } from './graphics';
-import { startInput, stopInput } from './input/input';
+import { startInput, stopInput, addButton, removeButton } from './input/input';
 import { Button, ButtonType } from './input/button';
 import { renderScreen } from './game/game';
 
@@ -65,6 +65,10 @@ export function enter() {
 
     window.addEventListener('resize', windowResized);    
     document.addEventListener('visibilitychange', onVisibilityChanged);
+
+    addButton(leftButton);
+    addButton(rightButton);
+    addButton(fireButton);
     startInput();
 
     acquireWakeLock();
@@ -79,6 +83,9 @@ export function exit() {
     window.removeEventListener('resize', windowResized);    
     document.removeEventListener('visibilitychange', onVisibilityChanged);
     stopInput();
+    removeButton(leftButton);
+    removeButton(rightButton);
+    removeButton(fireButton);
     
     if (removeMediaEventListener !== null) {
         removeMediaEventListener();
