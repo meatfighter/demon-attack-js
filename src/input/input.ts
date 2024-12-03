@@ -11,7 +11,8 @@ let firePressed = false;
 
 let leftPointed = 0;
 let rightPointed = 0;
-let autofire = 0;
+// let autofire = 0;
+let shootNow = false;
 
 class Pointer {
     x = 0;
@@ -39,6 +40,12 @@ export function removeButton(button: Button) {
 export function startInput() {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
+
+    document.addEventListener('pointerdown', e => e.preventDefault(), { passive: false });
+    document.addEventListener('pointermove', e => e.preventDefault(), { passive: false });
+    document.addEventListener('pointerup', e => e.preventDefault(), { passive: false });
+    document.addEventListener('pointercancel', e => e.preventDefault(), { passive: false });
+
     mainCanvas.addEventListener('pointerdown', onPointerDown, { passive: false });
     mainCanvas.addEventListener('pointermove', onPointerMove, { passive: false });
     mainCanvas.addEventListener('pointerup', onPointerUp, { passive: false });
@@ -55,9 +62,9 @@ export function stopInput() {
 }
 
 export function updateInput() {
-    if (autofire > 0) {
-        --autofire;
-    }
+    // if (autofire > 0) {
+    //     --autofire;
+    // }
 }
 
 function updatePointed() {
@@ -86,7 +93,7 @@ function updatePointed() {
         switch (button.buttonType) {
             case ButtonType.LEFT:
                 if (button.down) {
-                    autofire = AUTOFIRE_FRAMES;
+                    // autofire = AUTOFIRE_FRAMES;
                     leftPointed = rightPointed + 1;
                 } else {
                     leftPointed = 0;
@@ -94,7 +101,7 @@ function updatePointed() {
                 break; 
             case ButtonType.RIGHT:
                 if (button.down) {
-                    autofire = AUTOFIRE_FRAMES;
+                    // autofire = AUTOFIRE_FRAMES;
                     rightPointed = leftPointed + 1;
                 } else {
                     rightPointed = 0;
@@ -153,6 +160,7 @@ function onPointerUp(e: PointerEvent) {
     pointer.down = false;
     updatePointed();
     pointers.delete(e.pointerId);
+    shootNow = true;
 }
   
 function onPointerCancel(e: PointerEvent) {
@@ -168,7 +176,9 @@ export function isRightPressed(): boolean {
 }
 
 export function isFirePressed(): boolean {
-    return firePressed || autofire > 0;
+    const result = firePressed || shootNow;//autofire > 0;
+    shootNow = false;
+    return result;
 }
 
 function onKeyDown(e: KeyboardEvent) {

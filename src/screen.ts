@@ -108,6 +108,9 @@ export function render() {
     renderScreen(ctx);
 
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
+
+    mainCtx.fillStyle = 'red';
+    mainCtx.fillRect(0, 0, 10, 10);
 }
 
 function windowResized() {
