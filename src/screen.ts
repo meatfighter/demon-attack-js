@@ -109,7 +109,7 @@ export function render() {
 
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
 
-    mainCtx.fillStyle = 'yellow';
+    mainCtx.fillStyle = 'red';
     mainCtx.fillRect(0, 0, 10, 10);
 }
 

@@ -11,8 +11,8 @@ let firePressed = false;
 
 let leftPointed = 0;
 let rightPointed = 0;
-// let autofire = 0;
-let shootNow = false;
+let autofire = 0;
+// let shootNow = false;
 
 class Pointer {
     x = 0;
@@ -41,7 +41,7 @@ export function startInput() {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
 
-    document.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+    document.addEventListener('touchstart', e => e.preventDefault(), { passive: false }); // prevents magnify bubbles    
     document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
     document.addEventListener('touchend', e => e.preventDefault(), { passive: false });
 
@@ -66,9 +66,9 @@ export function stopInput() {
 }
 
 export function updateInput() {
-    // if (autofire > 0) {
-    //     --autofire;
-    // }
+    if (autofire > 0) {
+        --autofire;
+    }
 }
 
 function updatePointed() {
@@ -97,7 +97,7 @@ function updatePointed() {
         switch (button.buttonType) {
             case ButtonType.LEFT:
                 if (button.down) {
-                    // autofire = AUTOFIRE_FRAMES;
+                    autofire = AUTOFIRE_FRAMES;
                     leftPointed = rightPointed + 1;
                 } else {
                     leftPointed = 0;
@@ -105,7 +105,7 @@ function updatePointed() {
                 break; 
             case ButtonType.RIGHT:
                 if (button.down) {
-                    // autofire = AUTOFIRE_FRAMES;
+                    autofire = AUTOFIRE_FRAMES;
                     rightPointed = leftPointed + 1;
                 } else {
                     rightPointed = 0;
@@ -164,7 +164,7 @@ function onPointerUp(e: PointerEvent) {
     pointer.down = false;
     updatePointed();
     pointers.delete(e.pointerId);
-    shootNow = true;
+    // shootNow = true;
 }
   
 function onPointerCancel(e: PointerEvent) {
@@ -180,8 +180,8 @@ export function isRightPressed(): boolean {
 }
 
 export function isFirePressed(): boolean {
-    const result = firePressed || shootNow;//autofire > 0;
-    shootNow = false;
+    const result = firePressed || /*shootNow;//*/autofire > 0;
+    // shootNow = false;
     return result;
 }
 

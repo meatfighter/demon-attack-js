@@ -32,7 +32,7 @@ export class GameState {
         this.level = level;
         this.demonPalette = level % 7;
         this.demonType = (level >> 1) % 6;
-        this.cannonFiringSpeed = CANNON_FIRING_SPEEDS[Math.min(8, level)];
+        this.cannonFiringSpeed = 8; //CANNON_FIRING_SPEEDS[Math.min(8, level)]; // TODO
         this.demonBulletDropTimerReset = DEMON_FIRING_SPEEDS[(level < 4) ? level : (level & 1) + 4];
         this.spawnedDemons = 0;
         this.spawnDelay = 30;
