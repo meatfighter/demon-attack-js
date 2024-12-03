@@ -41,6 +41,10 @@ export function startInput() {
     document.addEventListener('keydown', onKeyDown);
     document.addEventListener('keyup', onKeyUp);
 
+    document.addEventListener('touchstart', e => e.preventDefault(), { passive: false });
+    document.addEventListener('touchmove', e => e.preventDefault(), { passive: false });
+    document.addEventListener('touchend', e => e.preventDefault(), { passive: false });
+
     document.addEventListener('pointerdown', e => e.preventDefault(), { passive: false });
     document.addEventListener('pointermove', e => e.preventDefault(), { passive: false });
     document.addEventListener('pointerup', e => e.preventDefault(), { passive: false });
