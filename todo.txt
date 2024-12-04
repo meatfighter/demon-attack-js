@@ -22,3 +22,17 @@ menu:
 [   ] DIFFICULT
 
 [   ] TRACER
+
+--------------
+
+sound fx and gamepad
+
+High Score: 12345
+volume <------------------->
+[ ] Autofire [ ] Tracer [ ] Fast
+[ Start ] or [ Continue ]
+
+save: level, remaining demons, score, bunkers
+
+always autofire at 12 !!!
+

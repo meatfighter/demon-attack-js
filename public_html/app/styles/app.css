@@ -15,6 +15,7 @@ body {
 
 body, button, input, select, textarea {
     font-family: 'Open Sans', sans-serif;
+    font-size: 16px;
 }
 
 #main-canvas {
@@ -102,6 +103,8 @@ body, button, input, select, textarea {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    margin-top: 30px;
+    margin-bottom: 15px;
 }
 
 .left-volume-label {
@@ -116,21 +119,25 @@ body, button, input, select, textarea {
 }
 
 #go-div {
-    margin-top: 40px;
+    margin-top: 30px;
+}
+
+#high-score-div {
+    font-size: 20px;
 }
 
 button {
-    background-color: #48D800;
-    color: black;
+    background-color: #0075FF;
+    color: #F0F0F0;
     border: none;
     padding: 10px 20px;
     margin: 0 5px;
     text-align: center;
     text-decoration: none;
     display: inline-block;
-    font-size: 16px;
-    font-weight: bold;
+    font-size: 18px;
     border-radius: 16px;
+    text-shadow: 1px 1px 2px black;
 }
 
 button:active {
@@ -138,7 +145,7 @@ button:active {
 }
 
 button:disabled {
-    background-color: #604B37;
+    background-color: #005CC8;
 }
 
 button:disabled:active {
@@ -185,6 +192,70 @@ button:focus {
 #loading-progress::-moz-progress-bar {
     background: #0075FF;
     border-radius: 4px;
+}
+
+.checkboxes-div {
+    display: flex;
+    gap: 20px;
+    align-items: center;
+}
+
+.checkbox-item {
+    display: flex;
+    align-items: center;
+}
+
+.checkbox-item input[type="checkbox"] {
+    display: none;
+}
+
+.checkbox-item label {
+    display: flex;
+    align-items: center;
+    cursor: pointer;
+    user-select: none;
+}
+
+.custom-checkbox {
+    position: relative;
+    width: 24px;
+    height: 24px;
+    background-color: #FFFFFF;
+    border: 2px solid #767676;
+    border-radius: 4px;
+    margin-right: 8px;
+    box-sizing: border-box;
+}
+
+.custom-checkbox::after {
+    content: '';
+    position: absolute;
+    left: 50%;
+    top: 50%;
+    width: 6px;
+    height: 12px;
+    border: solid white;
+    border-width: 0 3px 3px 0;
+    transform: translate(-50%, -67%) rotate(45deg);
+    opacity: 0;
+}
+
+.checkbox-item input[type="checkbox"]:checked + label .custom-checkbox {
+    background-color: #0075FF;
+    border-color: #0075FF;
+}
+
+.checkbox-item input[type="checkbox"]:checked + label .custom-checkbox::after {
+    opacity: 1;
+}
+
+.checkbox-item label:hover .custom-checkbox {
+    border-color: #4F4F4F;
+}
+
+.checkbox-item input[type="checkbox"]:checked + label:hover .custom-checkbox {
+    background-color: #005CC8;
+    border-color: #005CC8;
 }
 
 #death-div {

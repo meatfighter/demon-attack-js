@@ -67,7 +67,7 @@ export class Demon {
             --this.spawning;
         } else if (!this.exploding) {
             const { cannonBullet } = gs;
-            if (cannonBullet.state === CannonBulletState.FIRING && bulletIntersects(cannonBullet.x, cannonBullet.y, 8, 
+            if (cannonBullet.state === CannonBulletState.FIRING && bulletIntersects(cannonBullet.x, cannonBullet.y, 12, // 8, // TODO HACK!!!!!!!!!!!!!!!!!!!!!!!!! 
                     this.split ? splitDemonMasks[this.sprite] : demonMasks[gs.demonType][this.sprite], this.x, this.y)){
                 cannonBullet.load();
                 this.exploding = true;

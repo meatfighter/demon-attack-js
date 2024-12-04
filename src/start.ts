@@ -1,5 +1,6 @@
-import { getVolume, setVolume } from "./sfx";
-import { enter as enterGame } from "./screen";
+import { getVolume, setVolume } from './sfx';
+import { enter as enterGame } from './screen';
+import { config } from './config';
 
 let volume = 0;
 let landscape = false;
@@ -14,11 +15,35 @@ export function enter() {
     mainElement.innerHTML = `
             <div id="start-container">
                 <div id="start-div">
+                    <div id="high-score-div">High Score: 123456</div>
                     <div class="volume-div">
                         <span class="left-volume-label material-icons" id="left-volume-span" 
                                 lang="en">volume_mute</span>
                         <input type="range" id="volume-input" min="0" max="100" step="any" value="10">
                         <span class="right-volume-label" id="right-volume-span" lang="en">100</span>
+                    </div>
+                    <div class="checkboxes-div">
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="autofire-checkbox" name="autofire-checkbox" ${config.autofire ? 'checked' : ''}>
+                            <label for="autofire-checkbox">
+                                <span class="custom-checkbox"></span>
+                                Autofire
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="tracer-checkbox" name="tracer-checkbox" ${config.tracer ? 'checked' : ''}>
+                            <label for="tracer-checkbox">
+                                <span class="custom-checkbox"></span>
+                                Tracer
+                            </label>
+                        </div>
+                        <div class="checkbox-item">
+                            <input type="checkbox" id="fast-checkbox" name="fast-checkbox" ${config.fast ? 'checked' : ''}>
+                            <label for="fast-checkbox">
+                                <span class="custom-checkbox"></span>
+                                Fast
+                            </label>
+                        </div>
                     </div>
                     <div id="go-div">
                         <button id="start-button">Start</button>
@@ -30,6 +55,15 @@ export function enter() {
     const volumeInput = document.getElementById('volume-input') as HTMLInputElement;
     volumeInput.addEventListener('input', volumeChanged);
     volumeInput.value = String(volume);
+
+    // const autofireCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
+    // autofireCheckbox.checked = config.autofire;
+
+    // const tracerCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
+    // tracerCheckbox.checked = config.tracer;
+
+    // const fastCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
+    // fastCheckbox.checked = config.fast;
 
     const startButton = document.getElementById('start-button') as HTMLButtonElement;
     startButton.addEventListener('click', startButtonClicked);
