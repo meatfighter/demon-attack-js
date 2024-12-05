@@ -7,13 +7,12 @@ import {
 import { Tier } from './tier';
 import { Demon } from './demon';
 import { GameState } from './game-state';
-import { updateInput } from '@/input/input';
 
 let gs: GameState;
 
-function init() {
+export function resetGame() {
     gs = new GameState();
-    gs.setLevel(0); // TODO
+    gs.setLevel(0);
 }
 
 function trySpawnDemon() {
@@ -88,8 +87,6 @@ function trySpawnDemon() {
 }
 
 export function update() {
-    updateInput();
-
     const { cannon, cannonBullet, demons, demonBullets } = gs;
 
     if (gs.animatingGameOver) {
@@ -215,5 +212,3 @@ export function renderScreen(ctx: CanvasRenderingContext2D) {
     // cannon bullet
     cannonBullet.render(gs, ctx);
 }
-
-init();

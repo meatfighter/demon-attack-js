@@ -2,6 +2,7 @@ import { Demon } from './demon';
 import { Cannon } from './cannon';
 import { CannonBullet } from './cannon-bullet';
 import { DemonBullet } from './demon-bullet';
+import { config } from '@/config';
 
 const CANNON_FIRING_SPEEDS = [ 3, 3, 4, 4, 5, 5, 5, 5, 6 ];
 const DEMON_FIRING_SPEEDS = [ 8, 6, 6, 3, 5, 4 ];
@@ -32,11 +33,11 @@ export class GameState {
         this.level = level;
         this.demonPalette = level % 7;
         this.demonType = (level >> 1) % 6;
-        this.cannonFiringSpeed = 12; //CANNON_FIRING_SPEEDS[Math.min(8, level)]; // TODO
+        this.cannonFiringSpeed = config.autofire ? 12 : CANNON_FIRING_SPEEDS[Math.min(8, level)];
         this.demonBulletDropTimerReset = DEMON_FIRING_SPEEDS[(level < 4) ? level : (level & 1) + 4];
         this.spawnedDemons = 0;
         this.spawnDelay = 30;
-        this.spawnedDemons = 0;        
+        this.spawnedDemons = 0;
     }
 
     removeDemon(demon: Demon) {

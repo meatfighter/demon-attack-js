@@ -24,21 +24,21 @@ export function enter() {
                     </div>
                     <div class="checkboxes-div">
                         <div class="checkbox-item">
-                            <input type="checkbox" id="autofire-checkbox" name="autofire-checkbox" ${config.autofire ? 'checked' : ''}>
+                            <input type="checkbox" id="autofire-checkbox" name="autofire-checkbox">
                             <label for="autofire-checkbox">
                                 <span class="custom-checkbox"></span>
                                 Autofire
                             </label>
                         </div>
                         <div class="checkbox-item">
-                            <input type="checkbox" id="tracer-checkbox" name="tracer-checkbox" ${config.tracer ? 'checked' : ''}>
+                            <input type="checkbox" id="tracer-checkbox" name="tracer-checkbox">
                             <label for="tracer-checkbox">
                                 <span class="custom-checkbox"></span>
                                 Tracer
                             </label>
                         </div>
                         <div class="checkbox-item">
-                            <input type="checkbox" id="fast-checkbox" name="fast-checkbox" ${config.fast ? 'checked' : ''}>
+                            <input type="checkbox" id="fast-checkbox" name="fast-checkbox">
                             <label for="fast-checkbox">
                                 <span class="custom-checkbox"></span>
                                 Fast
@@ -56,14 +56,14 @@ export function enter() {
     volumeInput.addEventListener('input', volumeChanged);
     volumeInput.value = String(volume);
 
-    // const autofireCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
-    // autofireCheckbox.checked = config.autofire;
+    const autofireCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
+    autofireCheckbox.checked = config.autofire;
 
-    // const tracerCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
-    // tracerCheckbox.checked = config.tracer;
+    const tracerCheckbox = document.getElementById('tracer-checkbox') as HTMLInputElement;
+    tracerCheckbox.checked = config.tracer;
 
-    // const fastCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
-    // fastCheckbox.checked = config.fast;
+    const fastCheckbox = document.getElementById('fast-checkbox') as HTMLInputElement;
+    fastCheckbox.checked = config.fast;
 
     const startButton = document.getElementById('start-button') as HTMLButtonElement;
     startButton.addEventListener('click', startButtonClicked);
@@ -84,6 +84,16 @@ export function exit() {
 
 function startButtonClicked() {
     setVolume(volume);
+
+    const autofireCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
+    config.autofire = autofireCheckbox.checked;
+
+    const tracerCheckbox = document.getElementById('tracer-checkbox') as HTMLInputElement;
+    config.tracer = tracerCheckbox.checked;
+
+    const fastCheckbox = document.getElementById('fast-checkbox') as HTMLInputElement;
+    config.fast = fastCheckbox.checked;
+    
     exit();
     enterGame();
 }

@@ -6,7 +6,7 @@ import { playSoundEffect } from './sfx';
 import { PhysicalDimensions, Resolution } from './graphics';
 import { startInput, stopInput, addButton, removeButton } from './input/input';
 import { Button, ButtonType } from './input/button';
-import { renderScreen } from './game/game';
+import { renderScreen, resetGame } from './game/game';
 
 export let dpr: number;
 
@@ -19,6 +19,9 @@ export let mainCanvasLandscape: boolean;
 let screenCanvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D | null;
 
+let hideCursorTimeoutId: number | null = null;
+let cursorHidden = false;
+
 let removeMediaEventListener: NoParamVoidFunc | null = null;
 let exiting = false;
 
@@ -29,6 +32,27 @@ let screenY: number;
 
 const leftButton = new Button();
 const rightButton = new Button();
+
+function cancelHideCursorTimer() {
+    if (hideCursorTimeoutId !== null) {
+        clearTimeout(hideCursorTimeoutId);
+        hideCursorTimeoutId = null;
+    }
+
+    if (cursorHidden) {
+        mainCanvas.style.cursor = 'default';
+        cursorHidden = false;
+    }
+}
+
+function resetHideCursorTimer() {
+    cancelHideCursorTimer();
+
+    hideCursorTimeoutId = window.setTimeout(() => {
+        mainCanvas.style.cursor = 'none';
+        cursorHidden = true;
+    }, 3000);
+}
 
 function updatePixelRatio() {
     if (removeMediaEventListener !== null) {
@@ -50,6 +74,8 @@ function updatePixelRatio() {
 export function enter() {
     exiting = false;
 
+    resetGame();
+
     document.body.style.backgroundColor = '#C2BCB1';
 
     screenCanvas = document.createElement('canvas');
@@ -61,6 +87,11 @@ export function enter() {
     mainElement.innerHTML = `<canvas id="main-canvas" class="canvas" width="1" height="1"></canvas>`;
     mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement;
     mainCanvas.style.touchAction = 'none';
+
+    mainCanvas.addEventListener('mousemove', resetHideCursorTimer);
+    mainCanvas.addEventListener('mouseenter', resetHideCursorTimer);
+    mainCanvas.addEventListener('mouseleave', cancelHideCursorTimer);
+    resetHideCursorTimer();
 
     window.addEventListener('resize', windowResized);    
     document.addEventListener('visibilitychange', onVisibilityChanged);
@@ -78,6 +109,10 @@ export function exit() {
     exiting = true;
     stopAnimation();
     releaseWakeLock();
+    mainCanvas.removeEventListener('mousemove', resetHideCursorTimer);
+    mainCanvas.removeEventListener('mouseenter', resetHideCursorTimer);
+    mainCanvas.removeEventListener('mouseleave', cancelHideCursorTimer);
+    cancelHideCursorTimer();
     window.removeEventListener('resize', windowResized);    
     document.removeEventListener('visibilitychange', onVisibilityChanged);
     stopInput();
@@ -100,8 +135,7 @@ export function render() {
     }
     
     mainCtx.imageSmoothingEnabled = false;
-    mainCtx.fillStyle = '#1f1f1f';
-    mainCtx.lineWidth = 1;
+    mainCtx.fillStyle = '#1E1F22';    
     mainCtx.fillRect(0, 0, mainCanvasWidth, mainCanvasHeight);
 
     ctx.imageSmoothingEnabled = false;
@@ -109,8 +143,17 @@ export function render() {
 
     mainCtx.drawImage(screenCanvas, screenX, screenY, screenWidth, screenHeight);
 
-    mainCtx.fillStyle = 'yellow';
-    mainCtx.fillRect(0, 0, 10, 10);
+    // hamburger icon
+    mainCtx.imageSmoothingEnabled = true;
+    mainCtx.fillStyle = '#9198A1';    
+    mainCtx.fillRect(25, 26, 14, 1.5);
+    mainCtx.fillRect(25, 31, 14, 1.5);
+    mainCtx.fillRect(25, 36, 14, 1.5);
+    mainCtx.strokeStyle = '#3d444d';
+    mainCtx.lineWidth = 1;
+    mainCtx.beginPath();
+    mainCtx.roundRect(16, 16, 32, 32, 5);
+    mainCtx.stroke();
 }
 
 function windowResized() {
