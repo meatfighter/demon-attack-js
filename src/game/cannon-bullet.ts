@@ -22,7 +22,7 @@ export class CannonBullet {
     }
 
     update(gs: GameState) {
-        if (isLeftPressed() || isRightPressed()) {
+        if (isLeftPressed() || isRightPressed() || isFirePressed()) {
             this.autofireTimer = 180;
         } else if (this.autofireTimer > 0) {
             --this.autofireTimer;

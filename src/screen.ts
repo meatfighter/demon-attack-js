@@ -4,17 +4,15 @@ import { NoParamVoidFunc } from './no-param-void-func';
 import { enter as enterStart } from './start';
 import { playSoundEffect } from './sfx';
 import { PhysicalDimensions, Resolution } from './graphics';
-import { startInput, stopInput, addButton, removeButton } from './input/input';
-import { Button, ButtonType } from './input/button';
+import { startInput, stopInput } from './input/input';
 import { renderScreen, resetGame } from './game/game';
 
 export let dpr: number;
 
-export let mainCanvas: HTMLCanvasElement;
+let mainCanvas: HTMLCanvasElement;
 let mainCtx: CanvasRenderingContext2D | null;
-export let mainCanvasWidth: number;
-export let mainCanvasHeight: number;
-export let mainCanvasLandscape: boolean;
+let mainCanvasWidth: number;
+let mainCanvasHeight: number;
 
 let screenCanvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D | null;
@@ -29,9 +27,6 @@ let screenWidth: number;
 let screenHeight: number;
 let screenX: number;
 let screenY: number;
-
-const leftButton = new Button();
-const rightButton = new Button();
 
 function cancelHideCursorTimer() {
     if (hideCursorTimeoutId !== null) {
@@ -88,40 +83,65 @@ export function enter() {
     mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement;
     mainCanvas.style.touchAction = 'none';
 
-    mainCanvas.addEventListener('mousemove', resetHideCursorTimer);
-    mainCanvas.addEventListener('mouseenter', resetHideCursorTimer);
-    mainCanvas.addEventListener('mouseleave', cancelHideCursorTimer);
+    mainCanvas.addEventListener('click', onClick);
+    
+    window.addEventListener('mousemove', resetHideCursorTimer);
+    window.addEventListener('mouseenter', resetHideCursorTimer);
+    window.addEventListener('mouseleave', cancelHideCursorTimer);
     resetHideCursorTimer();
 
     window.addEventListener('resize', windowResized);    
     document.addEventListener('visibilitychange', onVisibilityChanged);
-
-    addButton(leftButton);
-    addButton(rightButton);
-    startInput();
-
+    
     acquireWakeLock();
     updatePixelRatio();
+    startInput();
     startAnimation();
 }
 
 export function exit() {
     exiting = true;
     stopAnimation();
-    releaseWakeLock();
-    mainCanvas.removeEventListener('mousemove', resetHideCursorTimer);
-    mainCanvas.removeEventListener('mouseenter', resetHideCursorTimer);
-    mainCanvas.removeEventListener('mouseleave', cancelHideCursorTimer);
+    stopInput();
+    releaseWakeLock();    
+    
+    mainCanvas.removeEventListener('click', onClick);
+
+    window.removeEventListener('mousemove', resetHideCursorTimer);
+    window.removeEventListener('mouseenter', resetHideCursorTimer);
+    window.removeEventListener('mouseleave', cancelHideCursorTimer);
     cancelHideCursorTimer();
+
     window.removeEventListener('resize', windowResized);    
     document.removeEventListener('visibilitychange', onVisibilityChanged);
-    stopInput();
-    removeButton(leftButton);
-    removeButton(rightButton);
-    
+
     if (removeMediaEventListener !== null) {
         removeMediaEventListener();
         removeMediaEventListener = null;
+    }
+
+    enterStart();
+}
+
+function onClick(e: MouseEvent) {
+    if (exiting || !(e.clientX && e.clientY)) {
+        return;
+    }
+
+    const innerWidth = window.innerWidth;
+    const innerHeight = window.innerHeight;
+    let x: number;
+    let y: number;
+    if (innerWidth >= innerHeight) {
+        x = e.clientX;
+        y = e.clientY;
+    } else {
+        x = innerHeight - 1 - e.clientY;
+        y = e.clientX;
+    }
+
+    if (x < 64 && y < 64) {
+        exit();
     }
 }
 
@@ -178,14 +198,12 @@ function windowResized() {
     const transform = new DOMMatrix();
     if (innerWidth >= innerHeight) {
         // Landscape mode
-        mainCanvasLandscape = true;
         mainCanvasWidth = innerWidth;
         mainCanvasHeight = innerHeight;
         transform.a = transform.d = dpr;
         transform.b = transform.c = transform.e = transform.f = 0;
     } else {
         // Portrait mode
-        mainCanvasLandscape = false;
         mainCanvasWidth = innerHeight;
         mainCanvasHeight = innerWidth;
         transform.a = transform.d = transform.e = 0;
@@ -211,18 +229,6 @@ function windowResized() {
         screenX = Math.round((mainCanvasWidth - screenWidth) / 2);
         screenY = 0;
     }
-
-    leftButton.x = 0;
-    leftButton.y = 0;
-    leftButton.width = mainCanvasWidth / 2;
-    leftButton.height = mainCanvasHeight;
-    leftButton.buttonType = ButtonType.LEFT;
-
-    rightButton.x = mainCanvasWidth / 2
-    rightButton.y = 0;
-    rightButton.width = mainCanvasWidth / 2;
-    rightButton.height = mainCanvasHeight;
-    rightButton.buttonType = ButtonType.RIGHT;
 
     render();
 }
