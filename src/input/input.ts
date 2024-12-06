@@ -1,9 +1,14 @@
+import { exit } from '@/screen';
+
 let leftPressed = 0;
 let rightPressed = 0;
 let firePressed = false;
 
 let leftTouched = false;
 let rightTouched = false;
+
+let hideCursorTimeoutId: number | null = null;
+let cursorHidden = false;
 
 class TouchData {
     timestampDown = 0;
@@ -16,6 +21,12 @@ class TouchData {
 const touchDatas: Map<number, TouchData> = new Map();
 
 export function startInput() {
+    window.addEventListener('click', onClick);
+    window.addEventListener('mousemove', resetHideCursorTimer);
+    window.addEventListener('mouseenter', resetHideCursorTimer);
+    window.addEventListener('mouseleave', cancelHideCursorTimer);
+    resetHideCursorTimer();
+
     window.addEventListener('touchstart', onTouch, { passive: false });
     window.addEventListener('touchmove', onTouch, { passive: false });
     window.addEventListener('touchend', onTouch, { passive: false });
@@ -35,6 +46,12 @@ export function startInput() {
 }
 
 export function stopInput() {
+    window.removeEventListener('click', onClick);
+    window.removeEventListener('mousemove', resetHideCursorTimer);
+    window.removeEventListener('mouseenter', resetHideCursorTimer);
+    window.removeEventListener('mouseleave', cancelHideCursorTimer);
+    cancelHideCursorTimer();
+
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('keyup', onKeyUp);
 
@@ -65,6 +82,27 @@ export function isFirePressed(): boolean {
     return firePressed;
 }
 
+function cancelHideCursorTimer() {
+    if (hideCursorTimeoutId !== null) {
+        clearTimeout(hideCursorTimeoutId);
+        hideCursorTimeoutId = null;
+    }
+
+    if (cursorHidden) {
+        document.body.style.cursor = 'default';
+        cursorHidden = false;
+    }
+}
+
+function resetHideCursorTimer() {
+    cancelHideCursorTimer();
+
+    hideCursorTimeoutId = window.setTimeout(() => {
+        document.body.style.cursor = 'none';
+        cursorHidden = true;
+    }, 3000);
+}
+
 function onTouch(e: TouchEvent) {
     e.preventDefault();    
 
@@ -93,6 +131,7 @@ function onTouch(e: TouchEvent) {
                 break;
             }
             case 'touchmove': {
+                resetHideCursorTimer();
                 const touchData = touchDatas.get(t.identifier);
                 if (touchData) {
                     touchData.x = x;
@@ -102,7 +141,13 @@ function onTouch(e: TouchEvent) {
             }
             case 'touchend':
             case 'touchcancel': {
-                touchDatas.delete(t.identifier);
+                const touchData = touchDatas.get(t.identifier);
+                if (touchData) {
+                    if (x < 64 && y < 64 && touchData.xDown < 64 && touchData.yDown < 64) {
+                        exit();
+                    } 
+                    touchDatas.delete(t.identifier);
+                }              
                 break;
             }
         }
@@ -136,15 +181,42 @@ function onTouch(e: TouchEvent) {
     }
 }
 
+function onClick(e: MouseEvent) {
+    if (!(e.clientX && e.clientY)) {
+        return;
+    }
+
+    const innerWidth = window.innerWidth;
+    const innerHeight = window.innerHeight;
+    let x: number;
+    let y: number;
+    if (innerWidth >= innerHeight) {
+        x = e.clientX;
+        y = e.clientY;
+    } else {
+        x = innerHeight - 1 - e.clientY;
+        y = e.clientX;
+    }
+
+    if (x < 64 && y < 64) {
+        exit();
+    }
+}
+
 function onKeyDown(e: KeyboardEvent) {
     switch(e.code) {
+        case 'KeyA':
         case 'ArrowLeft':
             leftPressed = rightPressed + 1;
             break;
+        case 'KeyD':
         case 'ArrowRight':
             rightPressed = leftPressed + 1;
-            break;        
-        case 'KeyZ':
+            break;
+        case 'Escape':
+            exit();
+            break;    
+        default:
             firePressed = true;
             break;            
     }
@@ -152,13 +224,15 @@ function onKeyDown(e: KeyboardEvent) {
 
 function onKeyUp(e: KeyboardEvent) {
     switch(e.code) {
+        case 'KeyA':
         case 'ArrowLeft':
             leftPressed = 0;
             break;
+        case 'KeyD':
         case 'ArrowRight':
             rightPressed = 0;
             break;        
-        case 'KeyZ':
+        default:
             firePressed = false;
             break;            
     }

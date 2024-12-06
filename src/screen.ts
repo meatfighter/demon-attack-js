@@ -17,9 +17,6 @@ let mainCanvasHeight: number;
 let screenCanvas: HTMLCanvasElement;
 let ctx: CanvasRenderingContext2D | null;
 
-let hideCursorTimeoutId: number | null = null;
-let cursorHidden = false;
-
 let removeMediaEventListener: NoParamVoidFunc | null = null;
 let exiting = false;
 
@@ -27,27 +24,6 @@ let screenWidth: number;
 let screenHeight: number;
 let screenX: number;
 let screenY: number;
-
-function cancelHideCursorTimer() {
-    if (hideCursorTimeoutId !== null) {
-        clearTimeout(hideCursorTimeoutId);
-        hideCursorTimeoutId = null;
-    }
-
-    if (cursorHidden) {
-        mainCanvas.style.cursor = 'default';
-        cursorHidden = false;
-    }
-}
-
-function resetHideCursorTimer() {
-    cancelHideCursorTimer();
-
-    hideCursorTimeoutId = window.setTimeout(() => {
-        mainCanvas.style.cursor = 'none';
-        cursorHidden = true;
-    }, 3000);
-}
 
 function updatePixelRatio() {
     if (removeMediaEventListener !== null) {
@@ -83,13 +59,6 @@ export function enter() {
     mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement;
     mainCanvas.style.touchAction = 'none';
 
-    mainCanvas.addEventListener('click', onClick);
-    
-    window.addEventListener('mousemove', resetHideCursorTimer);
-    window.addEventListener('mouseenter', resetHideCursorTimer);
-    window.addEventListener('mouseleave', cancelHideCursorTimer);
-    resetHideCursorTimer();
-
     window.addEventListener('resize', windowResized);    
     document.addEventListener('visibilitychange', onVisibilityChanged);
     
@@ -100,18 +69,15 @@ export function enter() {
 }
 
 export function exit() {
+    if (exiting) {
+        return;
+    }
+
     exiting = true;
     stopAnimation();
     stopInput();
     releaseWakeLock();    
     
-    mainCanvas.removeEventListener('click', onClick);
-
-    window.removeEventListener('mousemove', resetHideCursorTimer);
-    window.removeEventListener('mouseenter', resetHideCursorTimer);
-    window.removeEventListener('mouseleave', cancelHideCursorTimer);
-    cancelHideCursorTimer();
-
     window.removeEventListener('resize', windowResized);    
     document.removeEventListener('visibilitychange', onVisibilityChanged);
 
@@ -121,28 +87,6 @@ export function exit() {
     }
 
     enterStart();
-}
-
-function onClick(e: MouseEvent) {
-    if (exiting || !(e.clientX && e.clientY)) {
-        return;
-    }
-
-    const innerWidth = window.innerWidth;
-    const innerHeight = window.innerHeight;
-    let x: number;
-    let y: number;
-    if (innerWidth >= innerHeight) {
-        x = e.clientX;
-        y = e.clientY;
-    } else {
-        x = innerHeight - 1 - e.clientY;
-        y = e.clientX;
-    }
-
-    if (x < 64 && y < 64) {
-        exit();
-    }
 }
 
 export function render() {
