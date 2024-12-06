@@ -135,7 +135,7 @@ export function render() {
     }
     
     mainCtx.imageSmoothingEnabled = false;
-    mainCtx.fillStyle = '#1E1F22';    
+    mainCtx.fillStyle = '#0F0F0F';    
     mainCtx.fillRect(0, 0, mainCanvasWidth, mainCanvasHeight);
 
     ctx.imageSmoothingEnabled = false;
@@ -145,15 +145,10 @@ export function render() {
 
     // hamburger icon
     mainCtx.imageSmoothingEnabled = true;
-    mainCtx.fillStyle = '#9198A1';    
-    mainCtx.fillRect(25, 26, 14, 1.5);
-    mainCtx.fillRect(25, 31, 14, 1.5);
-    mainCtx.fillRect(25, 36, 14, 1.5);
-    mainCtx.strokeStyle = '#3d444d';
-    mainCtx.lineWidth = 1;
-    mainCtx.beginPath();
-    mainCtx.roundRect(16, 16, 32, 32, 5);
-    mainCtx.stroke();
+    mainCtx.fillStyle = '#FFFFFF';    
+    mainCtx.fillRect(27, 21, 18, 1);
+    mainCtx.fillRect(27, 27, 18, 1);
+    mainCtx.fillRect(27, 33, 18, 1);
 }
 
 function windowResized() {

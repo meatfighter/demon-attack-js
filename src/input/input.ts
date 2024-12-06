@@ -44,10 +44,10 @@ export function startInput() {
     // document.addEventListener('pointerup', e => e.preventDefault(), { passive: false });
     // document.addEventListener('pointercancel', e => e.preventDefault(), { passive: false });
 
-    window.addEventListener('pointerdown', preventDefault, { passive: false });
-    window.addEventListener('pointermove', preventDefault, { passive: false });
-    window.addEventListener('pointerup', preventDefault, { passive: false });
-    window.addEventListener('pointercancel', preventDefault, { passive: false });    
+    window.addEventListener('touchstart', preventDefault, { passive: false });
+    window.addEventListener('touchmove', preventDefault, { passive: false });
+    window.addEventListener('touchend', preventDefault, { passive: false });
+    window.addEventListener('touchcancel', preventDefault, { passive: false });    
 
     mainCanvas.addEventListener('pointerdown', onPointerDown, { passive: false });
     mainCanvas.addEventListener('pointermove', onPointerMove, { passive: false });
@@ -63,10 +63,10 @@ export function stopInput() {
     window.removeEventListener('keydown', onKeyDown);
     window.removeEventListener('keyup', onKeyUp);
 
-    window.removeEventListener('pointerdown', preventDefault);
-    window.removeEventListener('pointermove', preventDefault);
-    window.removeEventListener('pointerup', preventDefault);
-    window.removeEventListener('pointercancel', preventDefault);     
+    window.removeEventListener('touchstart', preventDefault);
+    window.removeEventListener('touchmove', preventDefault);
+    window.removeEventListener('touchend', preventDefault);
+    window.removeEventListener('touchcancel', preventDefault);     
 
     mainCanvas.removeEventListener('pointerdown', onPointerDown);
     mainCanvas.removeEventListener('pointermove', onPointerMove);

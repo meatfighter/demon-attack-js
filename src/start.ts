@@ -6,7 +6,7 @@ let volume = 0;
 let landscape = false;
 
 export function enter() {
-    document.body.style.backgroundColor = '#0D1117';
+    document.body.style.backgroundColor = '#0F0F0F';
 
     window.addEventListener('resize', windowResized);
     window.addEventListener('touchmove', onTouchMove, { passive: false });
