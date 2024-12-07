@@ -1,5 +1,7 @@
+import { isMobileDevice } from './mobile';
+
 export class Config {
-    autofire = true;
+    autofire = isMobileDevice();
     tracer = false;
     fast = false;
 }

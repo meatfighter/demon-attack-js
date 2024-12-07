@@ -1,5 +1,5 @@
 import { cannonSprite, cannonExplosionSprites } from '@/graphics';
-import { isLeftPressed, isRightPressed } from '@/input/input';
+import { isLeftPressed, isRightPressed } from '@/input';
 import { GameState } from './game-state';
 import { config } from '@/config';
 

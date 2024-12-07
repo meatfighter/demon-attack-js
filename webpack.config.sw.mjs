@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 export default {
     mode: 'production',
     entry: {
-        sw: './src/sw/sw.ts',
+        sw: './src/sw.ts',
     },
     output: {
         filename: '[name].bundle.js',

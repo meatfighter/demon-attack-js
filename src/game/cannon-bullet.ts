@@ -1,6 +1,6 @@
 import { GameState } from './game-state';
 import { colors } from '@/graphics';
-import { isLeftPressed, isRightPressed, isFirePressed } from '@/input/input';
+import { isLeftPressed, isRightPressed, isFirePressed } from '@/input';
 import { config } from '@/config';
 
 export enum CannonBulletState {

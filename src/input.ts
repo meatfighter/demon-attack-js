@@ -1,14 +1,18 @@
 import { exit } from '@/screen';
 
-let leftPressed = 0;
-let rightPressed = 0;
-let firePressed = false;
+let leftKeyPressed = 0;
+let rightKeyPressed = 0;
+let fireKeyPressed = false;
 
-let leftTouched = false;
-let rightTouched = false;
+let leftScreenTouched = false;
+let rightScreenTouched = false;
 
 let hideCursorTimeoutId: number | null = null;
 let cursorHidden = false;
+
+let lastLeftGamepadDown = false;
+let lastRightGamepadDown = false;
+let lastFireGamepadDown = false;
 
 class TouchData {
     timestampDown = 0;
@@ -35,12 +39,12 @@ export function startInput() {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 
-    leftPressed = 0;
-    rightPressed = 0;
-    firePressed = false;
+    leftKeyPressed = 0;
+    rightKeyPressed = 0;
+    fireKeyPressed = false;
 
-    leftTouched = false;
-    rightTouched = false;
+    leftScreenTouched = false;
+    rightScreenTouched = false;
 
     touchDatas.clear();
 }
@@ -60,26 +64,95 @@ export function stopInput() {
     window.removeEventListener('touchend', onTouch);
     window.removeEventListener('touchcancel', onTouch);
 
-    leftPressed = 0;
-    rightPressed = 0;
-    firePressed = false;
+    leftKeyPressed = 0;
+    rightKeyPressed = 0;
+    fireKeyPressed = false;
 
-    leftTouched = false;
-    rightTouched = false;
+    leftScreenTouched = false;
+    rightScreenTouched = false;
     
     touchDatas.clear();
 }
 
+export function updateInput() {
+    const gamepads = navigator.getGamepads();
+    if (!gamepads) {
+        return;
+    }
+
+    let leftDown = false;
+    let rightDown = false;
+    let fireDown = false;
+    for (let i = gamepads.length - 1; i >= 0; --i) {
+        const gamepad = gamepads[i];
+        if (!gamepad) {
+            continue;            
+        } 
+
+        // D-pad left or left shoulder or left stick
+        if (gamepad.buttons[14]?.pressed || gamepad.buttons[4]?.pressed || gamepad.buttons[10]?.pressed) {
+            leftDown = true;
+        }
+
+        // D-pad right or right shoulder or right stick
+        if (gamepad.buttons[15]?.pressed || gamepad.buttons[5]?.pressed || gamepad.buttons[11]?.pressed) {
+            rightDown = true;
+        }
+
+        // Analog stick left or right
+        const horizontalAxis = gamepad.axes[0];
+        if (horizontalAxis < -0.5) {
+            leftDown = true;
+        } else if (horizontalAxis > 0.5) {
+            rightDown = true;
+        }
+
+        // Non-directional buttons
+        if (gamepad.buttons[0]?.pressed || gamepad.buttons[1]?.pressed || gamepad.buttons[2]?.pressed 
+                || gamepad.buttons[3]?.pressed || gamepad.buttons[6]?.pressed || gamepad.buttons[7]?.pressed 
+                || gamepad.buttons[8]?.pressed || gamepad.buttons[9]?.pressed) {
+            fireDown = true;
+        }
+    }
+
+    if (leftDown) {
+        if (!lastLeftGamepadDown) {            
+            leftKeyPressed = rightKeyPressed + 1;
+        }
+    } else if (lastLeftGamepadDown) {
+        leftKeyPressed = 0;
+    }
+    lastLeftGamepadDown = leftDown;
+
+    if (rightDown) {
+        if (!lastRightGamepadDown) {            
+            rightKeyPressed = leftKeyPressed + 1;
+        }
+    } else if (lastRightGamepadDown) {
+        rightKeyPressed = 0;
+    }
+    lastRightGamepadDown = rightDown;
+
+    if (fireDown) {
+        if (!lastFireGamepadDown) {
+            fireKeyPressed = true;
+        }
+    } else if (lastFireGamepadDown) {
+        fireKeyPressed = false;
+    }
+    lastFireGamepadDown = fireDown;
+}
+
 export function isLeftPressed(): boolean {
-    return leftTouched || leftPressed > rightPressed;
+    return leftScreenTouched || leftKeyPressed > rightKeyPressed;
 }
 
 export function isRightPressed(): boolean {
-    return rightTouched || rightPressed > leftPressed;
+    return rightScreenTouched || rightKeyPressed > leftKeyPressed;
 }
 
 export function isFirePressed(): boolean {
-    return firePressed;
+    return fireKeyPressed;
 }
 
 function cancelHideCursorTimer() {
@@ -170,14 +243,14 @@ function onTouch(e: TouchEvent) {
     }
     if (td) {
         if (td.x < innerWidth / 2) {
-            leftTouched = true;
-            rightTouched = false;
+            leftScreenTouched = true;
+            rightScreenTouched = false;
         } else {
-            leftTouched = false;
-            rightTouched = true;
+            leftScreenTouched = false;
+            rightScreenTouched = true;
         }
     } else {
-        leftTouched = rightTouched = false;
+        leftScreenTouched = rightScreenTouched = false;
     }
 }
 
@@ -207,17 +280,17 @@ function onKeyDown(e: KeyboardEvent) {
     switch(e.code) {
         case 'KeyA':
         case 'ArrowLeft':
-            leftPressed = rightPressed + 1;
+            leftKeyPressed = rightKeyPressed + 1;
             break;
         case 'KeyD':
         case 'ArrowRight':
-            rightPressed = leftPressed + 1;
+            rightKeyPressed = leftKeyPressed + 1;
             break;
         case 'Escape':
             exit();
             break;    
         default:
-            firePressed = true;
+            fireKeyPressed = true;
             break;            
     }
 }
@@ -226,15 +299,16 @@ function onKeyUp(e: KeyboardEvent) {
     switch(e.code) {
         case 'KeyA':
         case 'ArrowLeft':
-            leftPressed = 0;
+            leftKeyPressed = 0;
             break;
         case 'KeyD':
         case 'ArrowRight':
-            rightPressed = 0;
-            break;        
+            rightKeyPressed = 0;
+            break;
+        case 'Escape':
+            break;
         default:
-            firePressed = false;
+            fireKeyPressed = false;
             break;            
     }
 }
-

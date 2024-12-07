@@ -7,6 +7,7 @@ import {
 import { Tier } from './tier';
 import { Demon } from './demon';
 import { GameState } from './game-state';
+import { updateInput } from '@/input';
 
 let gs: GameState;
 
@@ -87,6 +88,8 @@ function trySpawnDemon() {
 }
 
 export function update() {
+    updateInput();
+
     const { cannon, cannonBullet, demons, demonBullets } = gs;
 
     if (gs.animatingGameOver) {

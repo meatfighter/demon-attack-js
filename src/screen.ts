@@ -4,7 +4,7 @@ import { NoParamVoidFunc } from './no-param-void-func';
 import { enter as enterStart } from './start';
 import { playSoundEffect } from './sfx';
 import { PhysicalDimensions, Resolution } from './graphics';
-import { startInput, stopInput } from './input/input';
+import { startInput, stopInput } from './input';
 import { renderScreen, resetGame } from './game/game';
 
 export let dpr: number;
@@ -60,6 +60,8 @@ export function enter() {
     mainCanvas.style.touchAction = 'none';
 
     window.addEventListener('resize', windowResized);    
+    window.addEventListener('focus', onVisibilityChanged);
+    window.addEventListener('blur', onVisibilityChanged);
     document.addEventListener('visibilitychange', onVisibilityChanged);
     
     acquireWakeLock();
@@ -76,9 +78,11 @@ export function exit() {
     exiting = true;
     stopAnimation();
     stopInput();
-    releaseWakeLock();    
+    releaseWakeLock();
     
     window.removeEventListener('resize', windowResized);    
+    window.removeEventListener('focus', onVisibilityChanged);
+    window.removeEventListener('blur', onVisibilityChanged);
     document.removeEventListener('visibilitychange', onVisibilityChanged);
 
     if (removeMediaEventListener !== null) {
@@ -178,7 +182,10 @@ function windowResized() {
 }
 
 function onVisibilityChanged() {
-    if (!exiting && document.visibilityState === 'visible') {
+    if (!exiting && document.visibilityState === 'visible' && document.hasFocus()) {
         acquireWakeLock();
+        startAnimation();
+    } else {
+        stopAnimation();
     }
 }
