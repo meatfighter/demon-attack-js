@@ -13,7 +13,10 @@ let gs: GameState;
 
 export function resetGame() {
     gs = new GameState();
-    gs.setLevel(0);
+}
+
+export function saveGame() {
+    gs.save();    
 }
 
 function trySpawnDemon() {
@@ -100,7 +103,7 @@ export function update() {
     }
 
     if (gs.spawnedDemons === 8 && demons.length === 0 && demonBullets.length === 0 && !cannon.exploding) {        
-        gs.setLevel(gs.level + 1);
+        gs.incrementLevel();
         if (cannon.exploded || gs.bunkers === 6) {            
             cannon.reset();
             cannonBullet.load();            

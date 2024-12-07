@@ -15,7 +15,7 @@ import {
 import { CANNON_Y } from './cannon';
 import { CannonBulletState } from './cannon-bullet';
 import { createDemonBulletBatch } from './demon-bullet';
-import { config } from '@/config';
+import { store } from '@/store';
 
 export class Demon {
 
@@ -69,7 +69,7 @@ export class Demon {
         } else if (!this.exploding) {
             const { cannonBullet } = gs;
             if (cannonBullet.state === CannonBulletState.FIRING && bulletIntersects(cannonBullet.x, cannonBullet.y, 
-                        config.autofire ? 12 : 8, this.split ? splitDemonMasks[this.sprite] 
+                        store.autofire ? 12 : 8, this.split ? splitDemonMasks[this.sprite] 
                                 : demonMasks[gs.demonType][this.sprite], this.x, this.y)) {
                 cannonBullet.load();
                 this.exploding = true;

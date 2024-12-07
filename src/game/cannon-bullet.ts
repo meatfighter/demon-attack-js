@@ -1,7 +1,7 @@
 import { GameState } from './game-state';
 import { colors } from '@/graphics';
 import { isLeftPressed, isRightPressed, isFirePressed } from '@/input';
-import { config } from '@/config';
+import { store } from '@/store';
 
 export enum CannonBulletState {
     LOADED,
@@ -31,7 +31,7 @@ export class CannonBullet {
         if (this.state === CannonBulletState.LOADED) {
             this.x = gs.cannon.x + 3;
             this.y = 186;
-            if (!gs.cannon.exploding && (isFirePressed() || (config.autofire && this.autofireTimer > 0))) {
+            if (!gs.cannon.exploding && (isFirePressed() || (store.autofire && this.autofireTimer > 0))) {
                 this.state = CannonBulletState.FIRING;
                 this.y -= gs.cannonFiringSpeed;
             }
@@ -41,7 +41,7 @@ export class CannonBullet {
                 this.x = gs.cannon.x + 3;
                 this.y = 186;              
             } else {
-                if (config.tracer) {
+                if (store.tracer) {
                     this.x = gs.cannon.x + 3;
                 }
                 this.y -= gs.cannonFiringSpeed;

@@ -1,7 +1,7 @@
 import { cannonSprite, cannonExplosionSprites } from '@/graphics';
 import { isLeftPressed, isRightPressed } from '@/input';
 import { GameState } from './game-state';
-import { config } from '@/config';
+import { store } from '@/store';
 
 const CANNON_START_X = 87;
 const CANNON_MIN_X = 25;
@@ -43,11 +43,11 @@ export class Cannon {
             }
         } else if (isLeftPressed()) {
             if (this.x > CANNON_MIN_X) {
-                this.x -= config.fast ? 2 : 1;
+                this.x -= store.fast ? 2 : 1;
             }
         } else if (isRightPressed()) {
             if (this.x < CANNON_MAX_X) {
-                this.x += config.fast ? 2 : 1;
+                this.x += store.fast ? 2 : 1;
             }
         }
     }

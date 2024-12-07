@@ -1,8 +1,7 @@
-import { getVolume, setVolume } from './sfx';
+import { setVolume } from './sfx';
 import { enter as enterGame } from './screen';
-import { config } from './config';
+import { store, saveStore } from './store';
 
-let volume = 0;
 let landscape = false;
 
 export function enter() {
@@ -15,7 +14,7 @@ export function enter() {
     mainElement.innerHTML = `
             <div id="start-container">
                 <div id="start-div">
-                    <div id="high-score-div">High Score: 123456</div>
+                    <div id="high-score-div">High Score: ${store.highScore}</div>
                     <div class="volume-div">
                         <span class="left-volume-label material-icons" id="left-volume-span" 
                                 lang="en">volume_mute</span>
@@ -46,24 +45,24 @@ export function enter() {
                         </div>
                     </div>
                     <div id="go-div">
-                        <button id="start-button">Start</button>
+                        <button id="start-button">${isNewGame() ? 'Start' : 'Continue'}</button>
                     </div>
                 </div>
             </div>`;
 
-    volume = getVolume();
+    setVolume(store.volume);
     const volumeInput = document.getElementById('volume-input') as HTMLInputElement;
     volumeInput.addEventListener('input', volumeChanged);
-    volumeInput.value = String(volume);
+    volumeInput.value = String(store.volume);
 
     const autofireCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
-    autofireCheckbox.checked = config.autofire;
+    autofireCheckbox.checked = store.autofire;
 
     const tracerCheckbox = document.getElementById('tracer-checkbox') as HTMLInputElement;
-    tracerCheckbox.checked = config.tracer;
+    tracerCheckbox.checked = store.tracer;
 
     const fastCheckbox = document.getElementById('fast-checkbox') as HTMLInputElement;
-    fastCheckbox.checked = config.fast;
+    fastCheckbox.checked = store.fast;
 
     const startButton = document.getElementById('start-button') as HTMLButtonElement;
     startButton.addEventListener('click', startButtonClicked);
@@ -80,19 +79,30 @@ export function exit() {
 
     const startButton = document.getElementById('start-button') as HTMLButtonElement;
     startButton.removeEventListener('click', startButtonClicked);
+
+    const autofireCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
+    store.autofire = autofireCheckbox.checked;
+
+    const tracerCheckbox = document.getElementById('tracer-checkbox') as HTMLInputElement;
+    store.tracer = tracerCheckbox.checked;
+    
+    const fastCheckbox = document.getElementById('fast-checkbox') as HTMLInputElement;
+    store.fast = fastCheckbox.checked;
+    
+    saveStore();
 }
 
 function startButtonClicked() {
-    setVolume(volume);
+    setVolume(store.volume);
 
     const autofireCheckbox = document.getElementById('autofire-checkbox') as HTMLInputElement;
-    config.autofire = autofireCheckbox.checked;
+    store.autofire = autofireCheckbox.checked;
 
     const tracerCheckbox = document.getElementById('tracer-checkbox') as HTMLInputElement;
-    config.tracer = tracerCheckbox.checked;
+    store.tracer = tracerCheckbox.checked;
 
     const fastCheckbox = document.getElementById('fast-checkbox') as HTMLInputElement;
-    config.fast = fastCheckbox.checked;
+    store.fast = fastCheckbox.checked;
     
     exit();
     enterGame();
@@ -125,20 +135,20 @@ function volumeChanged() {
     const volumeInput = document.getElementById('volume-input') as HTMLInputElement;
     const rightVolumeSpan = document.getElementById('right-volume-span') as HTMLSpanElement;
 
-    volume = 100 * (+volumeInput.value - +volumeInput.min) / (+volumeInput.max - +volumeInput.min);
-    volumeInput.style.setProperty('--thumb-position', `${volume}%`);
+    store.volume = 100 * (+volumeInput.value - +volumeInput.min) / (+volumeInput.max - +volumeInput.min);
+    volumeInput.style.setProperty('--thumb-position', `${store.volume}%`);
 
-    if (volume === 0) {
+    if (store.volume === 0) {
         leftVolumeSpan.textContent = 'volume_off';
-    } else if (volume < 33) {
+    } else if (store.volume < 33) {
         leftVolumeSpan.textContent = 'volume_mute';
-    } else if (volume < 66) {
+    } else if (store.volume < 66) {
         leftVolumeSpan.textContent = 'volume_down';
     } else {
         leftVolumeSpan.textContent = 'volume_up';
     }
 
-    rightVolumeSpan.textContent = String(Math.round(volume));
+    rightVolumeSpan.textContent = String(Math.round(store.volume));
 }
 
 function windowResized() {
@@ -199,7 +209,11 @@ function windowResized() {
         startDiv.style.left = `${(innerWidth - rect.height) / 2}px`
         startDiv.style.top = `${(innerHeight - rect.width) / 2}px`;
     }
-    rightVolumeSpan.textContent = String(volume);
+    rightVolumeSpan.textContent = String(store.volume);
 
     volumeChanged();
+}
+
+function isNewGame() {
+    return store.score === 0 && store.level === 0 && store.bunkers === 3 && store.spawnedDemons === 0;
 }

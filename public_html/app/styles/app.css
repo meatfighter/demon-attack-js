@@ -104,7 +104,7 @@ body, button, input, select, textarea {
     align-items: center;
     justify-content: center;
     margin-top: 30px;
-    margin-bottom: 15px;
+    margin-bottom: 25px;
 }
 
 .left-volume-label {
@@ -119,7 +119,7 @@ body, button, input, select, textarea {
 }
 
 #go-div {
-    margin-top: 30px;
+    margin-top: 44px;
 }
 
 #high-score-div {
@@ -196,7 +196,7 @@ button:focus {
 
 .checkboxes-div {
     display: flex;
-    gap: 20px;
+    gap: 25px;
     align-items: center;
 }
 

@@ -2,10 +2,9 @@ import { startAnimation, stopAnimation } from './animate';
 import { acquireWakeLock, releaseWakeLock } from './wake-lock';
 import { NoParamVoidFunc } from './no-param-void-func';
 import { enter as enterStart } from './start';
-import { playSoundEffect } from './sfx';
 import { PhysicalDimensions, Resolution } from './graphics';
 import { startInput, stopInput } from './input';
-import { renderScreen, resetGame } from './game/game';
+import { renderScreen, resetGame, saveGame } from './game/game';
 
 export let dpr: number;
 
@@ -39,7 +38,7 @@ function updatePixelRatio() {
     media.addEventListener("change", updatePixelRatio);
     removeMediaEventListener = () => media.removeEventListener("change", updatePixelRatio);
 
-    windowResized();
+    onWindowResized();
 };
 
 export function enter() {
@@ -59,7 +58,8 @@ export function enter() {
     mainCanvas = document.getElementById("main-canvas") as HTMLCanvasElement;
     mainCanvas.style.touchAction = 'none';
 
-    window.addEventListener('resize', windowResized);    
+    window.addEventListener('beforeunload', onBeforeUnload);
+    window.addEventListener('resize', onWindowResized);    
     window.addEventListener('focus', onVisibilityChanged);
     window.addEventListener('blur', onVisibilityChanged);
     document.addEventListener('visibilitychange', onVisibilityChanged);
@@ -70,7 +70,7 @@ export function enter() {
     startAnimation();
 }
 
-export function exit() {
+function cleanUp() {
     if (exiting) {
         return;
     }
@@ -80,7 +80,8 @@ export function exit() {
     stopInput();
     releaseWakeLock();
     
-    window.removeEventListener('resize', windowResized);    
+    window.removeEventListener('beforeunload', onBeforeUnload);
+    window.removeEventListener('resize', onWindowResized);    
     window.removeEventListener('focus', onVisibilityChanged);
     window.removeEventListener('blur', onVisibilityChanged);
     document.removeEventListener('visibilitychange', onVisibilityChanged);
@@ -90,12 +91,17 @@ export function exit() {
         removeMediaEventListener = null;
     }
 
+    saveGame();
+}
+
+export function exit() {
+    cleanUp();
     enterStart();
 }
 
 export function render() {
     if (!mainCtx) {
-        windowResized();
+        onWindowResized();
         return;
     }
     if (!ctx) {
@@ -119,7 +125,7 @@ export function render() {
     mainCtx.fillRect(27, 33, 18, 1);
 }
 
-function windowResized() {
+function onWindowResized() {
 
     if (exiting) {
         return;
@@ -188,4 +194,8 @@ function onVisibilityChanged() {
     } else {
         stopAnimation();
     }
+}
+
+function onBeforeUnload() {
+    cleanUp();    
 }
