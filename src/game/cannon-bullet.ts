@@ -1,6 +1,7 @@
 import { GameState } from './game-state';
 import { colors } from '@/graphics';
 import { isLeftPressed, isRightPressed, isFirePressed } from '@/input';
+import { playSoundEffect } from '@/sfx';
 import { store } from '@/store';
 
 export enum CannonBulletState {
@@ -34,6 +35,9 @@ export class CannonBullet {
             if (!gs.cannon.exploding && (isFirePressed() || (store.autofire && this.autofireTimer > 0))) {
                 this.state = CannonBulletState.FIRING;
                 this.y -= gs.cannonFiringSpeed;
+                if (!store.autofire) {
+                    playSoundEffect('sfx/shoots-cannon.mp3');
+                }
             }
         } else {            
             if (this.y < 32) {

@@ -8,6 +8,13 @@ import { Tier } from './tier';
 import { Demon } from './demon';
 import { GameState } from './game-state';
 import { isFirePressed, isLeftPressed, isRightPressed, updateInput } from '@/input';
+import { playSoundEffect } from '@/sfx';
+import { clamp } from '@/math';
+
+const PULSE_SFX = new Array<string>(6);
+for (let pulse = 0; pulse < 6; ++pulse) {
+    PULSE_SFX[pulse] = `sfx/pulses-${pulse}.mp3`;
+}
 
 let gs: GameState;
 let lastFirePressed = false;
@@ -89,6 +96,7 @@ function trySpawnDemon() {
         demons.push(new Demon(Math.floor(20 + 123 * Math.random()), yMin + (yMax - yMin) * Math.random(), tier));
         ++gs.spawnedDemons;
         gs.spawnDelay = 8 + Math.floor(24 * Math.random());
+        playSoundEffect('sfx/spawns-demon.mp3');
     }
 }
 
@@ -120,9 +128,11 @@ export function update() {
         gs.incrementLevel();
         if (cannon.exploded || gs.bunkers === 6) {            
             cannon.reset();
-            cannonBullet.load();            
+            cannonBullet.load();
+            gs.pulseCounter = 0;            
         } else {
             gs.animatingExtraBunker = true;
+            playSoundEffect('sfx/awards-bunker.mp3');
         }
     }
 
@@ -130,9 +140,10 @@ export function update() {
         if (gs.bunkerColor === bunkerSprites.length - 1) {
             gs.animatingExtraBunker = false;
             gs.bunkerColor = 0;
+            gs.pulseCounter = 0;
             ++gs.bunkers;            
             cannon.reset();
-            cannonBullet.load();
+            cannonBullet.load();            
         } else {
             ++gs.bunkerColor;
         }   
@@ -181,6 +192,15 @@ export function update() {
     }  
 
     cannonBullet.update(gs);
+
+    gs.pulseCounter = (gs.pulseCounter + 1) & 0x1F;
+    if (gs.divingDemon) {
+        if ((gs.pulseCounter & 0x0F) === 0) {
+            playSoundEffect('sfx/dives-demon.mp3');
+        }    
+    } else if (gs.pulseCounter === 0) {
+        playSoundEffect(PULSE_SFX[clamp(gs.spawnedDemons - 3, 0, 5)]);
+    }
 }
 
 export function renderScreen(ctx: CanvasRenderingContext2D) {

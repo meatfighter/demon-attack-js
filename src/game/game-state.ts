@@ -31,6 +31,7 @@ export class GameState {
     animatingExtraBunker = false;
     animatingGameOver = false;
     newHighScore = false;
+    pulseCounter = 0;
 
     constructor() {
         this.setLevel(store.level);        
