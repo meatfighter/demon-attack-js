@@ -37,6 +37,15 @@ export class Cannon {
                 this.x = CANNON_START_X;
                 if (gs.bunkers === 0) {
                     gs.animatingGameOver = true;
+                    if (gs.score > store.highScore) {
+                        store.highScore = gs.score;
+                        gs.newHighScore = true;
+                    }
+                    store.level = 0;
+                    store.score = 0;
+                    store.spawnedDemons = 0;
+                    store.bunkers = 3;
+                    store.cannonExploded = false;
                 } else {
                     --gs.bunkers;
                 }

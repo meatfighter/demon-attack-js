@@ -20,7 +20,7 @@ export const colors: string[] = new Array<string>(256);
 
 export const baseSprites: Sprite[] = new Array<Sprite>(121);
 export const bunkerSprites: Sprite[] = new Array<Sprite>(62);
-export const digitSprites: Sprite[] = new Array<Sprite>(10);
+export const digitSprites: Sprite[][] = new Array<Sprite[]>(256); // color, digit
 
 export const demonSprites: Sprite[][][] = new Array<Sprite[][]>(7); // palette, demon, sprite
 export const demonMasks: Mask[][] = new Array<Mask[]>(6); // demon, sprite
@@ -145,20 +145,23 @@ function extractSprites() {
         });
     }
 
-    // digits    
-    const digitCol = palette[0x2C];
-    for (let i = 0; i < 10; ++i) {
-        digitSprites[i] = createSprite(6, 9, imageData => {
-            const offset = Offsets.DIGITS_GFX + 10 * (i + 1) - 2;
-            for (let y = 0; y < 9; ++y) {
-                const byte = binStr.charCodeAt(offset - y);
-                for (let x = 0, mask = 0x40; x < 6; ++x, mask >>= 1) {
-                    if ((byte & mask) !== 0) {
-                        setColor(imageData, x, y, digitCol);
+    // digits        
+    for (let color = 0; color < 256; ++color) {
+        const digitCol = palette[color];
+        digitSprites[color] = new Array<Sprite>(10);
+        for (let digit = 0; digit < 10; ++digit) {
+            digitSprites[color][digit] = createSprite(6, 9, imageData => {
+                const offset = Offsets.DIGITS_GFX + 10 * (digit + 1) - 2;
+                for (let y = 0; y < 9; ++y) {
+                    const byte = binStr.charCodeAt(offset - y);
+                    for (let x = 0, mask = 0x40; x < 6; ++x, mask >>= 1) {
+                        if ((byte & mask) !== 0) {
+                            setColor(imageData, x, y, digitCol);
+                        }
                     }
                 }
-            }
-        });        
+            });        
+        }
     }
   
     // demons

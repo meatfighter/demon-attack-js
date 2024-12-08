@@ -7,12 +7,14 @@ import {
 import { Tier } from './tier';
 import { Demon } from './demon';
 import { GameState } from './game-state';
-import { updateInput } from '@/input';
+import { isFirePressed, isLeftPressed, isRightPressed, updateInput } from '@/input';
 
 let gs: GameState;
+let lastFirePressed = false;
 
 export function resetGame() {
     gs = new GameState();
+    lastFirePressed = false;
 }
 
 export function saveGame() {
@@ -98,6 +100,18 @@ export function update() {
     if (gs.animatingGameOver) {
         if (gs.baseColor < baseSprites.length - 1) {
             ++gs.baseColor;
+        } else {
+            if (gs.newHighScore) {
+                gs.scoreColor = (gs.scoreColor + 1) & 0xFF;
+            }
+            if (isLeftPressed() || isRightPressed()) {
+                resetGame();
+            }
+            if (isFirePressed()) {
+                lastFirePressed = true;
+            } else if (lastFirePressed) {                
+                resetGame();
+            }
         }
         return;
     }
@@ -181,10 +195,11 @@ export function renderScreen(ctx: CanvasRenderingContext2D) {
 
     // score
     {
+        const sprites = digitSprites[gs.scoreColor];
         let s = gs.score;
         let x = 96;
         while (true) {
-            ctx.drawImage(digitSprites[s % 10], x, 18);
+            ctx.drawImage(sprites[s % 10], x, 18);
             s = Math.floor(s / 10);
             if (s === 0) {
                 break;

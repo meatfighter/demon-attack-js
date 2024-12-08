@@ -17,6 +17,7 @@ export class GameState {
     bunkers: number;
     bunkerColor = 0;
     score: number;
+    scoreColor = 0x2C;
     cannon = new Cannon();
     cannonBullet = new CannonBullet();
     cannonFiringSpeed = 0;
@@ -29,6 +30,7 @@ export class GameState {
     demonBulletDropTimerReset = 0;
     animatingExtraBunker = false;
     animatingGameOver = false;
+    newHighScore = false;
 
     constructor() {
         this.setLevel(store.level);        
