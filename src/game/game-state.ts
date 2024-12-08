@@ -3,6 +3,7 @@ import { Cannon } from './cannon';
 import { CannonBullet } from './cannon-bullet';
 import { DemonBullet } from './demon-bullet';
 import { store, saveStore } from '@/store';
+import { Tier } from './tier';
 
 const CANNON_FIRING_SPEEDS = [ 3, 3, 4, 4, 5, 5, 5, 5, 6 ];
 const DEMON_FIRING_SPEEDS = [ 8, 6, 6, 3, 5, 4 ];
@@ -34,6 +35,7 @@ export class GameState {
         this.score = store.score;
         this.spawnedDemons = store.spawnedDemons;        
         this.bunkers = store.bunkers;
+        this.cannon.exploded = store.cannonExploded;
     }
 
     private setLevel(level: number) {
@@ -51,28 +53,64 @@ export class GameState {
         this.setLevel(this.level + 1);        
     }
 
+    private countDemons(): number {
+        let top = false;
+        let middle = false;
+        let bottom = false;
+        let diving = this.divingDemon != null;
+        for (let i = this.demons.length - 1; i >= 0; --i) {
+            const demon = this.demons[i];
+            switch (demon.tier) {
+                case Tier.TOP:
+                    top = true;
+                    break;
+                case Tier.MIDDLE:
+                    middle = true;
+                    break;
+                case Tier.BOTTOM:
+                    bottom = true;
+                    break;
+                case Tier.DIVING:
+                    diving = true;
+                    break;            
+            }
+        }
+        let count = 0;
+        if (top) {
+            ++count;
+        }
+        if (middle) {
+            ++count;
+        }
+        if (bottom) {
+            ++count;
+        }
+        if (diving) {
+            ++count;
+        }
+        return count;
+    }
+
     save() {
-        store.highScore = Math.max(store.highScore, this.score);
         if (this.animatingGameOver || (this.cannon.exploding && this.bunkers === 0)) {
             store.level = 0;
             store.score = 0;
             store.spawnedDemons = 0;
             store.bunkers = 3;
-        } else if (this.spawnedDemons === 8 && this.demons.length === 0 && this.demonBullets.length === 0 
-                && !this.cannon.exploding) {
-            store.level = this.level + 1;
-            store.score = this.score;
-            store.spawnedDemons = 0;
-            if (this.cannon.exploded || this.bunkers === 6) {
-                store.bunkers = this.bunkers;
-            } else {
-                store.bunkers = this.bunkers + 1;
-            }
+            store.cannonExploded = false;
         } else {
             store.level = this.level;
-            store.score = this.score;
-            store.spawnedDemons = this.spawnedDemons;
-            store.bunkers = this.bunkers;
+            store.score = this.score;                        
+            store.cannonExploded = this.cannon.exploded;
+            store.spawnedDemons = Math.max(0, this.spawnedDemons - this.countDemons());
+            
+            if (this.cannon.exploding) {
+                store.bunkers = Math.max(0, this.bunkers - 1);
+            } else if (this.animatingExtraBunker) {
+                store.bunkers = Math.min(6, this.bunkers + 1);
+            } else {
+                store.bunkers = this.bunkers;
+            }
         }
         saveStore();
     }

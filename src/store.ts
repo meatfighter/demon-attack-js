@@ -15,6 +15,7 @@ export class Store {
     level = 0;
     bunkers = 3;
     spawnedDemons = 0;
+    cannonExploded = false;
 }
 
 export let store: Store;

@@ -11,16 +11,9 @@ export enum Resolution {
     HEIGHT = 228,
 }
 
-// TODO UNCOMMENT
-// export enum PhysicalDimensions {
-//     WIDTH = 4,
-//     HEIGHT = 3,
-// }
-
-// TODO REMOVE
 export enum PhysicalDimensions {
-    WIDTH = 320,
-    HEIGHT = 228,
+    WIDTH = 4,
+    HEIGHT = 3,
 }
 
 export const colors: string[] = new Array<string>(256);
