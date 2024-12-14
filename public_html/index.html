@@ -4,7 +4,7 @@
     <meta http-equiv="Content-Type" content="text/html; charset=utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <meta name="theme-color" content="#0F0F0F">
-    <meta name="date" content="2024-12-03">
+    <meta name="date" content="2024-12-14">
 
     <link rel="manifest" href="manifest.json">
     <link rel="icon" href="app/icons/favicon.svg" type="image/svg+xml">
@@ -24,12 +24,55 @@
 <body>
 <main id="main-content">
 
-<p class="title">Demon Attack</p>
+<p style="margin-top: 80px;"><img class="centered" src="images/title.svg" id="title" alt="Demon Attack" style="max-width: 975px;"></p>
 
-<button class="button" id="playButton">Play</button>
+<h1 id="about"><a class="header" href="#about" target="_self">About</a></h1>
+
+<button class="button" id="play-button">Play</button>
+
+
+About 
+
+This is a browser port of Demon Attack, a space shooter released in 1982 for the Atari 2600. It challenges the player to fend off waves of hovering creatures by controlling a laser cannon. The enemy patterns and weapons grow more complex with each round, culminating in foes that split into dive-bombing monsters. 
+
+[ Play ] 
+
+Controls 
+
+The game accepts three types of input: 
+
+Keyboard: Use the left and right arrow keys or the A and D keys to move. Use any other key to fire. 
+
+Gamepad: Use the D-pad or analog stick to move. Press any other button to fire. 
+
+Touchpad: On the configuration page, enable autofire. During play, hold down the left or right side of the screen to move in that direction.  
+
+Configuration 
+
+The configuration page provides three checkboxes: 
+
+Autofire: The cannon continuously shoots. This is the default on touchpad-only devices. 
+
+Tracer: The player steers the cannon shots. 
+
+Fast: Doubles the player’s cannon speed. 
+
+Differences 
+
+The original game was designed and programmed by Rob Fulop, with graphics created by Michael Becker. This TypeScript port was developed through detailed observations of gameplay and analysis of the original 6507 assembly language source code. It contains all the original graphics, sans the Imagic logo. 
+
+The configuration page provides checkboxes to reproduce the game variations from the original. However, the port does not support 2-player modes nor “advanced” mode (starting on wave thirteen). 
+
+The port introduced autofire to simplify input on touchpad-only devices. 
+
+In the original, the player reached a kill screen after 84 waves. A subsequent release patched this, allowing gameplay to continue at a plateaued difficulty. The port reproduces the latter. 
+
+ 
+
+ 
 
 
 </main>
-<script type="module" src="scripts/index.bundle.js?v=2024-12-03-1"></script>
+<script type="module" src="scripts/index.bundle.js?v=2024-12-14"></script>
 </body>
 </html>

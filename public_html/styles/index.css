@@ -48,17 +48,17 @@ p.title {
 }
 
 button {
-    background-color: #48D800;
-    color: black;
+    background-color: #0075FF;
+    color: #F0F0F0;
     border: none;
     padding: 10px 20px;
+    margin: 0 5px;
     text-align: center;
     text-decoration: none;
-    display: block;
-    font-size: 16px;
-    font-weight: bold;
+    display: inline-block;
+    font-size: 18px;
     border-radius: 16px;
-    margin: 25px auto 30px;
+    text-shadow: 1px 1px 2px black;
 }
 
 button:active {
@@ -66,7 +66,7 @@ button:active {
 }
 
 button:disabled {
-    background-color: #604B37;
+    background-color: #005CC8;
 }
 
 button:disabled:active {
