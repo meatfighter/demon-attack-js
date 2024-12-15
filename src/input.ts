@@ -24,6 +24,13 @@ class TouchData {
 
 const touchDatas: Map<number, TouchData> = new Map();
 
+export function isTouchOnlyDevice(): boolean {
+    const supportsTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
+    const supportsHover = window.matchMedia('(hover: hover)').matches;
+    const isCoarsePointer = window.matchMedia('(pointer: coarse)').matches;
+    return supportsTouch && !supportsHover && isCoarsePointer;
+}
+
 export function startInput() {
     window.addEventListener('click', onClick);
     window.addEventListener('mousemove', resetHideCursorTimer);

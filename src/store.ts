@@ -1,4 +1,4 @@
-import { isMobileDevice } from './mobile';
+import { isTouchOnlyDevice } from './input';
 
 export const LOCAL_STORAGE_KEY = 'demon-attack-store';
 
@@ -7,7 +7,7 @@ export class Store {
     
     volume = 10;
 
-    autofire = isMobileDevice();
+    autofire = isTouchOnlyDevice();
     tracer = false;
     fast = false;
    
