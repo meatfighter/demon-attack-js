@@ -1,6 +1,5 @@
 import { enter as enterProgress } from "./progress";
 import { enter as enterDeath } from "./death";
-import { loadStore } from "./store";
 
 export function init() {
     window.addEventListener('error', e => {
@@ -19,8 +18,7 @@ export function init() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.register('sw.bundle.js').then(_ => {});
     }
-
-    loadStore();
+    
     enterProgress();
 }
 

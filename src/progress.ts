@@ -2,6 +2,7 @@ import JSZip from 'jszip';
 import { download } from "./download";
 import { decodeAudioData, waitForDecodes } from "./sfx";
 import { enter as enterStart } from "./start";
+import { loadStore } from "./store";
 
 let landscape = false;
 let progressBar: HTMLProgressElement;
@@ -24,6 +25,8 @@ export function enter() {
     }
 
     windowResized();
+
+    loadStore();
 
     download('resources.zip', frac => {
         progressBar.value = 100 * frac;
