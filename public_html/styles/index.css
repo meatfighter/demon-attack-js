@@ -10,7 +10,7 @@ html {
 }
 
 body {
-    background-color: #0F0F0F;
+    background-color: #0C0C0C;
     color: #E6EDF3;
     padding: 0;
     font-family: 'Open Sans', sans-serif;
@@ -35,16 +35,6 @@ p {
     font-size: 16px;
     line-height: 27px;
     font-weight: 300;
-}
-
-p.title {
-    font-family: 'Reem Kufi Fun', serif;
-    font-size: 72px;
-    font-weight: 500;
-    text-align: center;
-    padding-top: 20px;
-    margin-bottom: 0;
-    line-height: 80px;
 }
 
 button {
@@ -77,9 +67,11 @@ button:focus {
     outline: none;
 }
 
-table.copyright {
-    width: 100%;
-    margin-top: -15px;
+button.centered {
+    margin-top: 30px;
+    margin-left: auto;
+    margin-right: auto;
+    display: block;
 }
 
 p.centered {
@@ -103,27 +95,23 @@ p.home {
 }
 
 a,a:visited {
-    color: #54FF00;
+    color: #58A6FF;
     text-decoration: none;
-    white-space: nowrap;
 }
 
-a:hover {
-    color: #48D800;
-    text-decoration: none;
-    white-space: nowrap;
+a:hover,a:active {
+    color: #58A6FF;
+    text-decoration: underline;
 }
 
 a.header,a.header:visited {
     color: #E6EDF3;
     text-decoration: none;
-    white-space: nowrap;
 }
 
 a.header:hover {
     color: #C1C7CC;
     text-decoration: none;
-    white-space: nowrap;
 }
 
 hr {
@@ -182,6 +170,13 @@ img.svg {
 i {
     font-style: italic;
     font-weight: normal;
+    color: inherit;
+    font-size: inherit;
+}
+
+strong {
+    font-style: normal;
+    font-weight: bold;
     color: inherit;
     font-size: inherit;
 }
@@ -250,4 +245,47 @@ code {
 
 dd {
     margin-left: 30px;
+}
+
+ul {
+    list-style-type: disc;
+    margin: 0;
+    margin-bottom: 14px;
+    padding-left: 32px;    
+}
+  
+ul li {
+    margin-bottom: 14px;      
+}
+
+.indented {
+    padding-left: 6px;
+}
+  
+strong.item {
+    margin-bottom: 14px;
+    display: inline-block;
+}
+
+footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 25px;
+}
+
+footer .left {
+    text-align: left;
+    font-size: 12px;
+    line-height: 16px;
+}
+
+footer .right {
+    text-align: right;
+}
+
+footer img {
+    height: 22px !important;
+    margin-left: 3px;
+    vertical-align: text-bottom;
 }
