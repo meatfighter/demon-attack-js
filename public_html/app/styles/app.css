@@ -269,3 +269,10 @@ button:focus {
 #fatal-error {
     font-size: 4em;
 }
+
+.loading-container {
+    display: grid;
+    place-items: center;
+    height: 100vh;
+    font-size: 64px;
+}

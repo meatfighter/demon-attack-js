@@ -36,7 +36,14 @@ export let cannonSprite: Sprite;
 export let cannonMask: Mask;
 export const cannonExplosionSprites: Sprite[] = new Array<Sprite>(8);
 
+async function yieldToMainThread() {
+    await new Promise(resolve => setTimeout(resolve, 0));
+}
+
 function createSprite(width: number, height: number, callback: (imageData: ImageData) => void): Sprite {
+    const imageData = new ImageData(width, height);
+    callback(imageData);
+    
     const sprite = document.createElement('canvas');
     sprite.width = width;
     sprite.height = height;  
@@ -44,9 +51,7 @@ function createSprite(width: number, height: number, callback: (imageData: Image
     if (!ctx) {
         throw new Error('Failed to create canvas rendering context.');
     }
-    const imageData = ctx.getImageData(0, 0, width, height);
-    callback(imageData);
-    ctx.putImageData(imageData, 0, 0);    
+    ctx.putImageData(imageData, 0, 0);
     return sprite;
 }
 
@@ -92,7 +97,7 @@ function setColor(imageData: ImageData, x: number, y: number, color: RGBColor) {
     data[offset + 3] = 0xFF;
 }
 
-function extractSprites() {
+async function extractSprites() {
 
     enum Offsets {
         DEMON_COLS = 0,
@@ -127,7 +132,8 @@ function extractSprites() {
                 }
             }
         });
-    }    
+    }
+    await yieldToMainThread();
 
     // bunkers
     for (let i = 0; i < 62; ++i) {
@@ -144,9 +150,10 @@ function extractSprites() {
             }
         });
     }
+    await yieldToMainThread();
 
     // digits        
-    for (let color = 0; color < 256; ++color) {
+    for (let color = 0; color < 256; ++color) {        
         const digitCol = palette[color];
         digitSprites[color] = new Array<Sprite>(10);
         for (let digit = 0; digit < 10; ++digit) {
@@ -162,7 +169,11 @@ function extractSprites() {
                 }
             });        
         }
+        if ((color & 0x0F) === 0) {        
+            await yieldToMainThread();
+        }
     }
+    await yieldToMainThread();
   
     // demons
     for (let level = 0; level < 7; ++level) {
@@ -188,6 +199,7 @@ function extractSprites() {
             }
         }
     }
+    await yieldToMainThread();
     for (let demon = 0; demon < 6; ++demon) {
         demonMasks[demon] = new Array<Mask>(3);
         for (let sprite = 0; sprite < 3; ++sprite) {
@@ -219,6 +231,7 @@ function extractSprites() {
             }
         }
     }
+    await yieldToMainThread();
 
     // demon spawns
     for (let level = 0; level < 7; ++level) {
@@ -242,6 +255,7 @@ function extractSprites() {
             }
         }
     }
+    await yieldToMainThread();
 
     // demon shots
     for (let shot = 0; shot < 16; ++shot) {
@@ -253,6 +267,7 @@ function extractSprites() {
             }
         }
     }
+    await yieldToMainThread();
 
     // split demons
     for (let level = 0; level < 7; ++level) {
@@ -273,9 +288,11 @@ function extractSprites() {
             });                
         }
     }
+    await yieldToMainThread();
     for (let sprite = 0; sprite < 3; ++sprite) {
         splitDemonMasks[sprite] = createMask(splitDemonSprites[0][sprite]);
     }
+    await yieldToMainThread();
     
     // split demon explodes
     for (let level = 0; level < 7; ++level) {
@@ -295,7 +312,8 @@ function extractSprites() {
                 }
             });
         }
-    }    
+    }
+    await yieldToMainThread();    
     
     // cannon
     const cannonCol = palette[0x56];
@@ -311,6 +329,7 @@ function extractSprites() {
         }
     });
     cannonMask = createMask(cannonSprite);
+    await yieldToMainThread();
 
     // cannon explodes
     for (let sprite = 0; sprite < 8; ++sprite) {
@@ -333,4 +352,4 @@ function extractSprites() {
     }    
 }
 
-extractSprites();
+await extractSprites();

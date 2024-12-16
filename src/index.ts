@@ -1,6 +1,4 @@
 function onPlayButtonClicked() {
-    const mainElement = document.getElementById('main-content') as HTMLElement;
-    mainElement.innerHTML = '<div class="loading-container">Loading...</div>';
     window.location.href = 'app/app.html';
 }
 

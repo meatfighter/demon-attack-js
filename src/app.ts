@@ -16,10 +16,8 @@ export function init() {
     document.addEventListener('dblclick', e => e.preventDefault(), { passive: false });
 
     if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.bundle.js').then(_ => {});
+        void navigator.serviceWorker.register('sw.bundle.js');
     }
     
     enterProgress();
 }
-
-document.addEventListener('DOMContentLoaded', init);

@@ -289,9 +289,3 @@ footer img {
     margin-left: 3px;
     vertical-align: text-bottom;
 }
-
-.loading-container {
-    display: grid;
-    place-items: center;
-    height: 100vh;
-}
