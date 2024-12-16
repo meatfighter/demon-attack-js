@@ -38,6 +38,7 @@ export const cannonExplosionSprites: Sprite[] = new Array<Sprite>(8);
 
 async function yieldToMainThread() {
     await new Promise(resolve => setTimeout(resolve, 0));
+    await new Promise(resolve => requestAnimationFrame(resolve));
 }
 
 function createSprite(width: number, height: number, callback: (imageData: ImageData) => void): Sprite {

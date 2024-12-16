@@ -1,6 +1,6 @@
 function init() {
     const mainElement = document.getElementById('main-content') as HTMLElement;
-    mainElement.innerHTML = '<div id="loading-div" class="loading-container">.</div>';
+    mainElement.innerHTML = '<div id="loading-div" class="loading-container">...</div>';
     const loadingDiv = document.getElementById('loading-div') as HTMLDivElement;
     const intervalId = setInterval(() => {
         loadingDiv.textContent = (loadingDiv.textContent === '...')
