@@ -2,8 +2,6 @@ import { enter as enterProgress } from "./progress";
 import { enter as enterDeath } from "./death";
 
 export function init() {
-    console.log('--- app started ---');
-
     window.addEventListener('error', e => {
         console.error(`Caught in global handler: ${e.message}`, {
             source: e.filename,
