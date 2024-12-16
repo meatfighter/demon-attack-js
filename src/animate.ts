@@ -28,10 +28,6 @@ export function stopAnimation() {
     cancelAnimationFrame(frameID);
 }
 
-// TODO REMOVE
-let frames = 0;
-let startTime = 0;
-
 export function renderAndUpdate() {
     if (!animationRunning) {
         return;
@@ -40,19 +36,6 @@ export function renderAndUpdate() {
     frameID = requestAnimationFrame(renderAndUpdate);
 
     render();
-
-    // TODO REMOVE
-    ++frames;
-    if (startTime === 0) {
-        startTime = Date.now();
-    }
-    const duration = Date.now() - startTime;
-    if (duration >= 10_000) {
-        console.log(`FPS: ${1000 * frames / duration}`);
-        startTime = Date.now();
-        frames = 0;
-    }
-
 
     const currentTime = performance.now();
     const elapsedTime = currentTime - previousTime;

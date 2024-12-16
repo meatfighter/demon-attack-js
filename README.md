@@ -1,1 +1,1 @@
-# demon-attack-js
+Project page: https://meatfighter.com/demon-attack/
