@@ -4,7 +4,7 @@ import { fileURLToPath } from 'url';
 export default {
     mode: 'production',
     entry: {
-        loading: './src/bootstrap.ts',
+        bootstrap: './src/bootstrap.ts',
     },
     output: {
         filename: '[name].bundle.js',

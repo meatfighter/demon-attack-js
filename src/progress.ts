@@ -1,4 +1,3 @@
-import JSZip from 'jszip';
 import { download } from "./download";
 import { decodeAudioData, waitForDecodes } from "./sfx";
 import { enter as enterStart } from "./start";
@@ -79,23 +78,27 @@ function messageReceived(e: MessageEvent<number>) {
 }
 
 function onDownload(arrayBuffer: Uint8Array) {
-    new JSZip().loadAsync(arrayBuffer).then(zip => Object.entries(zip.files).forEach(entry => {
-        const [ filename, fileData ] = entry;
-        if (fileData.dir) {
-            return;
-        }
-        if (filename.endsWith('.mp3')) {
-            decodeAudioData(filename, fileData);
-        }
-    }));
+    import(/* webpackChunkName: "jszip" */ 'jszip').then(({ default: JSZip }) => {
+        new JSZip().loadAsync(arrayBuffer).then(zip => Object.entries(zip.files).forEach(entry => {
+            const [ filename, fileData ] = entry;
+            if (fileData.dir) {
+                return;
+            }
+            if (filename.endsWith('.mp3')) {
+                decodeAudioData(filename, fileData);
+            }
+        }));
+    });
 
     waitForDecodes().then(() => {
         (document.getElementById('loading-progress') as HTMLProgressElement).value = 100;
-        loadStore();
-        initGraphics().then(() => {
-            exit();
-            enterStart();
-        });
+        setTimeout(() => {
+            loadStore();
+            initGraphics().then(() => {
+                exit();
+                enterStart();
+            });
+        }, 10);
     });
 }
 

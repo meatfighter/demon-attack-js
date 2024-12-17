@@ -7,8 +7,7 @@ function init() {
             ? '' 
             : loadingDiv.textContent + '.';
     }, 400);
-
-    requestAnimationFrame(() => registerServiceWorker(intervalId));
+    setTimeout(() => registerServiceWorker(intervalId), 10);
 }
 
 function registerServiceWorker(intervalId: number) {
