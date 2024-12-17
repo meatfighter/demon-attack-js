@@ -3,6 +3,7 @@ import { download } from "./download";
 import { decodeAudioData, waitForDecodes } from "./sfx";
 import { enter as enterStart } from "./start";
 import { loadStore } from "./store";
+import { init as initGraphics } from './graphics';
 
 let landscape = false;
 let progressBar: HTMLProgressElement;
@@ -26,8 +27,6 @@ export function enter() {
 
     windowResized();
 
-    loadStore();
-
     download('resources.zip', frac => {
         progressBar.value = 100 * frac;
         setProgressBarColor('#0075FF');
@@ -41,6 +40,9 @@ export function exit() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.removeEventListener('message', messageReceived);
     }
+
+    loadStore();
+    initGraphics();
 }
 
 function setProgressBarColor(color: string) {

@@ -98,7 +98,7 @@ function setColor(imageData: ImageData, x: number, y: number, color: RGBColor) {
     data[offset + 3] = 0xFF;
 }
 
-async function extractSprites() {
+export async function init() {
 
     enum Offsets {
         DEMON_COLS = 0,
@@ -352,5 +352,3 @@ async function extractSprites() {
         });
     }    
 }
-
-await extractSprites();
