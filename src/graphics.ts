@@ -3,7 +3,7 @@ class RGBColor {
     }
 }
 
-export type Sprite = HTMLCanvasElement;
+export type Sprite = ImageBitmap;
 export type Mask = boolean[][];
 
 export enum Resolution {
@@ -36,37 +36,21 @@ export let cannonSprite: Sprite;
 export let cannonMask: Mask;
 export const cannonExplosionSprites: Sprite[] = new Array<Sprite>(8);
 
-async function yieldToMainThread() {
-    await new Promise(resolve => setTimeout(resolve, 0));
-    await new Promise(resolve => requestAnimationFrame(resolve));
+async function createSprite(width: number, height: number, callback: (imageData: ImageData) => void): 
+        Promise<{ imageBitmap: Sprite, imageData: ImageData }> {
+    return new Promise(resolve => {
+        const imageData = new ImageData(width, height);
+        callback(imageData);
+        createImageBitmap(imageData).then(imageBitmap => resolve({ imageBitmap, imageData }));
+    });
 }
 
-function createSprite(width: number, height: number, callback: (imageData: ImageData) => void): Sprite {
-    const imageData = new ImageData(width, height);
-    callback(imageData);
-    
-    const sprite = document.createElement('canvas');
-    sprite.width = width;
-    sprite.height = height;  
-    const ctx = sprite.getContext('2d');
-    if (!ctx) {
-        throw new Error('Failed to create canvas rendering context.');
-    }
-    ctx.putImageData(imageData, 0, 0);
-    return sprite;
-}
-
-function createMask(sprite: Sprite): Mask {
-    const mask = new Array<boolean[]>(sprite.height);
-    const ctx = sprite.getContext('2d');
-    if (!ctx) {
-        throw new Error('Failed to create canvas rendering context.');
-    }
-    const imageData = ctx.getImageData(0, 0, sprite.width, sprite.height);
+function createMask(imageData: ImageData): Mask {
+    const mask = new Array<boolean[]>(imageData.height);
     const { data } = imageData;
-    for (let y = 0, i = 3; y < sprite.height; ++y) {
-        mask[y] = new Array<boolean>(sprite.width);
-        for (let x = 0; x < sprite.width; ++x, i += 4) {
+    for (let y = 0, i = 3; y < imageData.height; ++y) {
+        mask[y] = new Array<boolean>(imageData.width);
+        for (let x = 0; x < imageData.width; ++x, i += 4) {
             mask[y][x] = data[i] !== 0;
         }
     }
@@ -123,23 +107,24 @@ export async function init() {
         + 'AQKGzGggAAgoLWbAAAAABEgoLGfBB8ZGRkZGRkZHwAGBgYGBgYGBg4AHxMTEA8DExMfAB8TEwMOAxMTHwADAx+TExMTExMAHxMTAwMfEBMfA'
         + 'B8TExMfEBMTHwAMDAwGBgMTEx8AHxMTEx8ZGRkfAB8TEwMfExMTHwAgCAQUEGEiEJACAQBgSIRRA==');
 
+    const promises: Promise<any>[] = [];
+
     // bases
     for (let i = 0; i < 121; ++i) {
-        baseSprites[i] = createSprite(1, 29, imageData => {
+        promises.push(createSprite(1, 29, imageData => {
             for (let y = 0, j = (i === 120) ? 0x4C : ((0x8C + i) & 0xFF); y < 29; ++y) {
                 setColor(imageData, 0, y, palette[j & 0xFF]);
                 if (y < 6) {
                     j -= 2;
                 }
             }
-        });
+        }).then(({ imageBitmap }) => baseSprites[i] = imageBitmap));
     }
-    await yieldToMainThread();
 
     // bunkers
     for (let i = 0; i < 62; ++i) {
         const bunkerCol = palette[(i === 0) ? 0x4C : (0xC2 + i)];
-        bunkerSprites[i] = createSprite(3, 5, imageData => {
+        promises.push(createSprite(3, 5, imageData => {
             const offset = Offsets.BUNKER_GFX + 5;
             for (let y = 0; y < 5; ++y) {
                 const byte = binStr.charCodeAt(offset - y);
@@ -149,16 +134,15 @@ export async function init() {
                     }
                 }
             }
-        });
+        }).then(({ imageBitmap }) => bunkerSprites[i] = imageBitmap));
     }
-    await yieldToMainThread();
 
     // digits        
     for (let color = 0; color < 256; ++color) {        
         const digitCol = palette[color];
         digitSprites[color] = new Array<Sprite>(10);
         for (let digit = 0; digit < 10; ++digit) {
-            digitSprites[color][digit] = createSprite(6, 9, imageData => {
+            promises.push(createSprite(6, 9, imageData => {
                 const offset = Offsets.DIGITS_GFX + 10 * (digit + 1) - 2;
                 for (let y = 0; y < 9; ++y) {
                     const byte = binStr.charCodeAt(offset - y);
@@ -168,24 +152,23 @@ export async function init() {
                         }
                     }
                 }
-            });        
-        }
-        if ((color & 0x0F) === 0) {        
-            await yieldToMainThread();
+            }).then(({ imageBitmap }) => digitSprites[color][digit] = imageBitmap));        
         }
     }
-    await yieldToMainThread();
   
     // demons
+    for (let demon = 0; demon < 6; ++demon) {
+        demonMasks[demon] = new Array<Mask>(3);
+    }
     for (let level = 0; level < 7; ++level) {
         const colOffset = Offsets.DEMON_COLS + (level << 3);
         demonSprites[level] = new Array<Sprite[]>(6);
         for (let demon = 0; demon < 6; ++demon) {
             const demonOffset = Offsets.DEMON_GFX + 24 * demon;
-            demonSprites[level][demon] = new Array<Sprite>(3);            
+            demonSprites[level][demon] = new Array<Sprite>(3);                    
             for (let sprite = 0; sprite < 3; ++sprite) {
                 const spriteOffset = demonOffset + (sprite << 3);
-                demonSprites[level][demon][sprite] = createSprite(16, 8, imageData => {
+                promises.push(createSprite(16, 8, imageData => {
                     for (let y = 0; y < 8; ++y) {
                         const col = palette[binStr.charCodeAt(colOffset + y)];
                         const byte = binStr.charCodeAt(spriteOffset + y);
@@ -196,15 +179,13 @@ export async function init() {
                             }
                         }
                     }
-                });                
+                }).then(({ imageBitmap, imageData }) => {
+                    demonSprites[level][demon][sprite] = imageBitmap;
+                    if (level === 0) {
+                        demonMasks[demon][sprite] = createMask(imageData);
+                    }
+                }));                
             }
-        }
-    }
-    await yieldToMainThread();
-    for (let demon = 0; demon < 6; ++demon) {
-        demonMasks[demon] = new Array<Mask>(3);
-        for (let sprite = 0; sprite < 3; ++sprite) {
-            demonMasks[demon][sprite] = createMask(demonSprites[0][demon][sprite]);
         }
     }
    
@@ -217,7 +198,7 @@ export async function init() {
             demonExplosionSprites[level][splits] = new Array<Sprite>(3);
             for (let sprite = 0; sprite < 3; ++sprite) {
                 const spriteOffset = splitsOffset + (sprite << 3);
-                demonExplosionSprites[level][splits][2 - sprite] = createSprite(16, 8, imageData => {
+                promises.push(createSprite(16, 8, imageData => {
                     for (let y = 0; y < 8; ++y) {
                         const col = palette[binStr.charCodeAt(colOffset + y)];
                         const byte = binStr.charCodeAt(spriteOffset + y);
@@ -228,11 +209,10 @@ export async function init() {
                             }
                         }
                     }
-                });
+                }).then(({ imageBitmap }) => demonExplosionSprites[level][splits][2 - sprite] = imageBitmap));
             }
         }
     }
-    await yieldToMainThread();
 
     // demon spawns
     for (let level = 0; level < 7; ++level) {
@@ -242,7 +222,7 @@ export async function init() {
             const spriteOffset = Offsets.DEMON_EXPLODES_GFX + (sprite << 3);
             demonSpawnSprites[level][sprite] = new Array<Sprite>(2);
             for (let right = 0; right < 2; ++right) {
-                demonSpawnSprites[level][sprite][right] = createSprite(8, 8, imageData => {
+                promises.push(createSprite(8, 8, imageData => {
                     for (let y = 0; y < 8; ++y) {
                         const col = palette[binStr.charCodeAt(colOffset + y)];
                         const byte = binStr.charCodeAt(spriteOffset + y);
@@ -252,11 +232,10 @@ export async function init() {
                             }
                         }
                     }
-                });
+                }).then(({ imageBitmap }) => demonSpawnSprites[level][sprite][right] = imageBitmap));
             }
         }
     }
-    await yieldToMainThread();
 
     // demon shots
     for (let shot = 0; shot < 16; ++shot) {
@@ -268,7 +247,6 @@ export async function init() {
             }
         }
     }
-    await yieldToMainThread();
 
     // split demons
     for (let level = 0; level < 7; ++level) {
@@ -276,7 +254,7 @@ export async function init() {
         splitDemonSprites[level] = new Array<Sprite>(3);
         for (let sprite = 0; sprite < 3; ++sprite) {
             const spriteOffset = Offsets.SPLIT_DEMON_GFX + (sprite << 3);
-            splitDemonSprites[level][sprite] = createSprite(8, 8, imageData => {
+            promises.push(createSprite(8, 8, imageData => {
                 for (let y = 0; y < 8; ++y) {
                     const col = palette[binStr.charCodeAt(colOffset + y)];
                     const byte = binStr.charCodeAt(spriteOffset + y);
@@ -286,14 +264,14 @@ export async function init() {
                         }
                     }
                 }
-            });                
+            }).then(({ imageBitmap, imageData }) => {
+                splitDemonSprites[level][sprite] = imageBitmap;
+                if (level === 0) {
+                    splitDemonMasks[sprite] = createMask(imageData);
+                }
+            }));                
         }
     }
-    await yieldToMainThread();
-    for (let sprite = 0; sprite < 3; ++sprite) {
-        splitDemonMasks[sprite] = createMask(splitDemonSprites[0][sprite]);
-    }
-    await yieldToMainThread();
     
     // split demon explodes
     for (let level = 0; level < 7; ++level) {
@@ -301,7 +279,7 @@ export async function init() {
         splitDemonExplosionSprites[level] = new Array<Sprite>(3);
         for (let sprite = 0; sprite < 3; ++sprite) {
             const spriteOffset = Offsets.DEMON_SPLITS_GFX + (sprite << 3);
-            splitDemonExplosionSprites[level][2 - sprite] = createSprite(8, 8, imageData => {
+            promises.push(createSprite(8, 8, imageData => {
                 for (let y = 0; y < 8; ++y) {
                     const col = palette[binStr.charCodeAt(colOffset + y)];
                     const byte = binStr.charCodeAt(spriteOffset + y);
@@ -311,14 +289,13 @@ export async function init() {
                         }
                     }
                 }
-            });
+            }).then(({ imageBitmap} ) => splitDemonExplosionSprites[level][2 - sprite] = imageBitmap));
         }
     }
-    await yieldToMainThread();    
     
     // cannon
     const cannonCol = palette[0x56];
-    cannonSprite = createSprite(7, 12, imageData => {
+    promises.push(createSprite(7, 12, imageData => {
         const offset = Offsets.CANNON_GFX + 11;
         for (let y = 0; y < 12; ++y) {
             const byte = binStr.charCodeAt(offset - y);
@@ -328,14 +305,15 @@ export async function init() {
                 }
             }
         }
-    });
-    cannonMask = createMask(cannonSprite);
-    await yieldToMainThread();
+    }).then(({ imageBitmap, imageData }) => {
+        cannonSprite = imageBitmap;
+        cannonMask = createMask(imageData);
+    }));    
 
     // cannon explodes
     for (let sprite = 0; sprite < 8; ++sprite) {
         const spriteOffset = Offsets.CANNON_EXPLODES_GFX + 5 * sprite;
-        cannonExplosionSprites[sprite] = createSprite(16, 34, imageData => {
+        promises.push(createSprite(16, 34, imageData => {
             for (let y = 0; y < 5; ++y) {
                 const col = palette[binStr.charCodeAt(Offsets.CANNON_EXPLODES_COLS + y)];
                 const yOffset = 32 - (y << 3);
@@ -349,6 +327,8 @@ export async function init() {
                     }
                 }
             }
-        });
-    }    
+        }).then(({ imageBitmap}) => cannonExplosionSprites[sprite] = imageBitmap));
+    }
+    
+    await Promise.all(promises);
 }

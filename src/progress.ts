@@ -40,9 +40,6 @@ export function exit() {
     if ('serviceWorker' in navigator) {
         navigator.serviceWorker.removeEventListener('message', messageReceived);
     }
-
-    loadStore();
-    initGraphics();
 }
 
 function setProgressBarColor(color: string) {
@@ -94,8 +91,11 @@ function onDownload(arrayBuffer: Uint8Array) {
 
     waitForDecodes().then(() => {
         (document.getElementById('loading-progress') as HTMLProgressElement).value = 100;
-        exit();
-        enterStart();
+        loadStore();
+        initGraphics().then(() => {
+            exit();
+            enterStart();
+        });
     });
 }
 
