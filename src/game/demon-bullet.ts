@@ -4,8 +4,6 @@ import { Demon } from './demon';
 import { bulletIntersects } from '@/math';
 import { CANNON_Y } from './cannon';
 
-const color = colors[0x4e];
-
 const FREQS = [
   //   1   2   3   4   5   6
     [  1,  0, 18,  5,  0,  0 ], // 0
@@ -55,6 +53,8 @@ export function createDemonBulletBatch(gs: GameState, demon: Demon) {
 }
 
 export class DemonBullet {
+
+    private readonly color = colors[0x4e];
 
     xOffset = 0;
 
@@ -139,7 +139,7 @@ export class DemonBullet {
         if (y0 > 196 || y1 < y0) {
             return;
         }
-        ctx.fillStyle = color;
+        ctx.fillStyle = this.color;
         const x = this.x + this.xOffset;
         ctx.fillRect(x + this.shots[0], y0, 1, y1 - y0 + 1);
         if (this.shots.length > 1) {

@@ -9,9 +9,9 @@ export enum CannonBulletState {
     FIRING,        
 }
 
-const color = colors[0x6e];
-
 export class CannonBullet {
+
+    private readonly color = colors[0x6e];
 
     state = CannonBulletState.LOADED;
     x = 0;
@@ -62,7 +62,7 @@ export class CannonBullet {
             return;
         }
         const startY = Math.max(32, this.y);
-        ctx.fillStyle = color;
+        ctx.fillStyle = this.color;
         ctx.fillRect(this.x, startY, 1, endY - startY + 1);
     }
 }
