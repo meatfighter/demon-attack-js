@@ -16,7 +16,7 @@ import { CANNON_Y } from './cannon';
 import { CannonBulletState } from './cannon-bullet';
 import { createDemonBulletBatch } from './demon-bullet';
 import { store } from '@/store';
-import { playSoundEffect } from '@/sfx';
+import { play } from '@/audio';
 
 const EXPLODE_SFXS = new Array<string>(12);
 
@@ -94,7 +94,7 @@ export class Demon {
                         }
                     }
                 }
-                playSoundEffect(EXPLODE_SFXS[gs.level % 12]);
+                play(EXPLODE_SFXS[gs.level % 12]);
             }
         }
 

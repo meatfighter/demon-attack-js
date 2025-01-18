@@ -2,7 +2,7 @@ import { cannonSprite, cannonExplosionSprites } from '@/graphics';
 import { isLeftPressed, isRightPressed } from '@/input';
 import { GameState } from './game-state';
 import { store } from '@/store';
-import { playSoundEffect } from '@/sfx';
+import { play } from '@/audio';
 
 const CANNON_START_X = 87;
 const CANNON_MIN_X = 25;
@@ -26,7 +26,7 @@ export class Cannon {
 
     explode() {
         this.exploding = this.exploded = true;
-        playSoundEffect('sfx/explodes-cannon.mp3');
+        play('sfx/explodes-cannon.mp3');
     }
 
     update(gs: GameState) {
@@ -48,7 +48,7 @@ export class Cannon {
                     store.spawnedDemons = 0;
                     store.bunkers = 3;
                     store.cannonExploded = false;
-                    playSoundEffect('sfx/ends-game.mp3');
+                    play('sfx/ends-game.mp3');
                 } else {
                     --gs.bunkers;
                 }

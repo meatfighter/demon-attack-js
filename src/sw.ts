@@ -1,6 +1,6 @@
 declare const self: ServiceWorkerGlobalScope;
 
-export const CACHE_NAME = 'demon-attack-cache';
+export const CACHE_NAME = 'demon-attack-cache-2025-01-18';
 
 const MAX_FETCH_RETRIES = 5;
 

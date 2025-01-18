@@ -1,5 +1,7 @@
 import { exit } from '@/screen';
 
+const ANALOG_STICK_THRESHOLD = 0.5;
+
 let leftKeyPressed = 0;
 let rightKeyPressed = 0;
 let fireKeyPressed = false;
@@ -24,6 +26,15 @@ class TouchData {
 
 const touchDatas: Map<number, TouchData> = new Map();
 
+export function resetInput() {
+    leftKeyPressed = 0;
+    rightKeyPressed = 0;
+    fireKeyPressed = false;    
+    leftScreenTouched = false;
+    rightScreenTouched = false;  
+    touchDatas.clear();
+}
+
 export function isTouchOnlyDevice(): boolean {
     const supportsTouch = 'ontouchstart' in window || navigator.maxTouchPoints > 0;
     const supportsHover = window.matchMedia('(hover: hover)').matches;
@@ -46,14 +57,7 @@ export function startInput() {
     window.addEventListener('keydown', onKeyDown);
     window.addEventListener('keyup', onKeyUp);
 
-    leftKeyPressed = 0;
-    rightKeyPressed = 0;
-    fireKeyPressed = false;
-
-    leftScreenTouched = false;
-    rightScreenTouched = false;
-
-    touchDatas.clear();
+    resetInput();
 }
 
 export function stopInput() {
@@ -71,14 +75,7 @@ export function stopInput() {
     window.removeEventListener('touchend', onTouch);
     window.removeEventListener('touchcancel', onTouch);
 
-    leftKeyPressed = 0;
-    rightKeyPressed = 0;
-    fireKeyPressed = false;
-
-    leftScreenTouched = false;
-    rightScreenTouched = false;
-    
-    touchDatas.clear();
+    resetInput();
 }
 
 export function updateInput() {
@@ -107,10 +104,11 @@ export function updateInput() {
         }
 
         // Analog stick left or right
-        const horizontalAxis = gamepad.axes[0];
-        if (horizontalAxis < -0.5) {
+        const leftStickX = gamepad.axes[0];
+        const rightStickX = gamepad.axes[2];
+        if (leftStickX < -ANALOG_STICK_THRESHOLD || rightStickX < -ANALOG_STICK_THRESHOLD) {
             leftDown = true;
-        } else if (horizontalAxis > 0.5) {
+        } else if (leftStickX > ANALOG_STICK_THRESHOLD || rightStickX > ANALOG_STICK_THRESHOLD) {
             rightDown = true;
         }
 
@@ -235,7 +233,7 @@ function onTouch(e: TouchEvent) {
     
     let td: TouchData | null = null;
     for (const [ identifier, touchData ] of Array.from(touchDatas)) {
-        if (!td || touchData.timestampDown > td.timestampDown) {
+        if ((touchData.x >= 64 || touchData.y >= 64) && (!td || touchData.timestampDown > td.timestampDown)) {
             td = touchData;
         }
         outer: {
@@ -278,7 +276,7 @@ function onClick(e: MouseEvent) {
         y = e.clientX;
     }
 
-    if (x < 64 && y < 64) {
+    if (x < 64 && y < 64) { // hamburger
         exit();
     }
 }
