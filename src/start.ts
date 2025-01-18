@@ -50,7 +50,6 @@ export function enter() {
                 </div>
             </div>`;
 
-    setVolume(store.volume);
     const volumeInput = document.getElementById('volume-input') as HTMLInputElement;
     volumeInput.addEventListener('input', volumeChanged);
     volumeInput.value = String(store.volume);
