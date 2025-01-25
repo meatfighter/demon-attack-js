@@ -1,6 +1,6 @@
 declare const self: ServiceWorkerGlobalScope;
 
-export const CACHE_NAME = 'demon-attack-cache-2025-01-18';
+export const CACHE_NAME = 'demon-attack-cache-2025-01-25';
 
 const MAX_FETCH_RETRIES = 5;
 
@@ -94,5 +94,4 @@ self.addEventListener('fetch', e => {
     );
 });
 
-
-
+self.addEventListener('install', () => self.skipWaiting());

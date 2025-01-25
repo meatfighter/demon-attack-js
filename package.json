@@ -1,6 +1,6 @@
 {
   "name": "demon-attack-js",
-  "version": "1.0.0",
+  "version": "1.2.0",
   "description": "A browser port of a space shooter originally released in 1982 for the Atari 2600.",
   "repository": {
     "type": "git",
